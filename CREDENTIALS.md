@@ -190,7 +190,3 @@ chmod 700 ~/.credentials
 chmod 600 ~/.credentials/*.json
 ```
 
-## Security Contact
-
-If you discover a security vulnerability in credential handling, please report it via GitHub Issues at:
-https://github.com/anthropics/claude-code/issues
