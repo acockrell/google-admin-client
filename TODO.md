@@ -154,16 +154,27 @@ Implementation details:
 **Rationale:** Better debugging and error tracking.
 
 ### 8. CI/CD Modernization
-- [ ] Create GitHub Actions workflows
-  - [ ] Build and test on PR
-  - [ ] Run golangci-lint
-  - [ ] Security scanning (gosec, trivy)
+- [x] Create GitHub Actions workflows
+  - [x] Build and test on PR
+  - [x] Run golangci-lint
+  - [x] Security scanning (gosec, trivy)
   - [ ] Automated releases
 - [ ] Set up goreleaser for multi-platform builds
 - [ ] Add release automation
-- [ ] Migrate from Jenkins or run both in parallel
+- [ ] Docker multi-arch images with proper labels
 
 **Rationale:** Modernize CI/CD pipeline with automated testing and security scanning.
+
+**Status:** 🚧 Partial - CI workflows complete, release automation pending
+Implementation details:
+- **CI Workflow** (`.github/workflows/ci.yml`):
+  - **Test Job**: Runs tests with race detection and coverage reporting on every PR and push to main
+  - **Lint Job**: Runs golangci-lint with 5-minute timeout
+  - **Security Job**: Runs both gosec and Trivy vulnerability scanners with SARIF output to GitHub Security tab
+  - **Build Job**: Cross-platform builds on Ubuntu, macOS, and Windows with Go 1.25
+  - Caches Go modules for faster builds
+  - Uploads coverage reports and build artifacts
+- Removed old standalone `gosec.yml` workflow (now integrated into ci.yml)
 
 ### 9. Documentation
 - [ ] Add installation instructions to README
