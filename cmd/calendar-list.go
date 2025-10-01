@@ -54,7 +54,7 @@ func listCalendarRunFunc(cmd *cobra.Command, args []string) {
 	}
 
 	// list events from provided calendarID
-	c := &calendar.Events{}
+	var c *calendar.Events
 	if timeMin != "" && timeMax != "" {
 		c, err = client.Events.List(calendarID).ShowDeleted(false).SingleEvents(true).TimeMin(timeMin).TimeMax(timeMax).MaxResults(numEvents).OrderBy("startTime").Do()
 	} else if timeMin != "" {

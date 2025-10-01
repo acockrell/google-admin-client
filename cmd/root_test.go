@@ -74,12 +74,12 @@ func TestGetDomainEnvironmentVariable(t *testing.T) {
 	originalDomain := domain
 	defer func() {
 		domain = originalDomain
-		os.Unsetenv("GOOGLE_ADMIN_DOMAIN")
+		_ = os.Unsetenv("GOOGLE_ADMIN_DOMAIN")
 		viper.Set("domain", "")
 	}()
 
 	// Set environment variable
-	os.Setenv("GOOGLE_ADMIN_DOMAIN", "env.com")
+	_ = os.Setenv("GOOGLE_ADMIN_DOMAIN", "env.com")
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("google_admin")
 
