@@ -7,3 +7,4 @@ google-admin-client
 .DS_Store
 coverage.html
 coverage.out
+dist/

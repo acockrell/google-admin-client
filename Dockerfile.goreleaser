@@ -1,0 +1,24 @@
+# Dockerfile for GoReleaser builds
+# This uses the pre-built binary from goreleaser
+
+FROM alpine:3.20
+
+# Install ca-certificates for HTTPS connections
+RUN apk --no-cache add ca-certificates tzdata && \
+    addgroup -g 1000 gac && \
+    adduser -D -u 1000 -G gac gac && \
+    mkdir -p /home/gac/.config && \
+    chown -R gac:gac /home/gac
+
+# Copy the pre-built binary from goreleaser
+COPY gac /usr/local/bin/gac
+
+# Switch to non-root user
+USER gac
+
+# Set working directory
+WORKDIR /home/gac
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/gac"]
+CMD ["--help"]

@@ -1,4 +1,4 @@
-.PHONY: all build clean test lint fmt vet install help docker-build
+.PHONY: all build clean test lint fmt vet install help docker-build release release-snapshot release-test
 
 # Binary name
 BINARY_NAME=gac
@@ -101,6 +101,26 @@ run: build
 
 ## check: Run all checks (fmt, vet, lint, gosec, test)
 check: fmt vet lint gosec test
+
+## release-snapshot: Build release snapshot locally (requires goreleaser)
+release-snapshot:
+	@echo "Building release snapshot..."
+	@which goreleaser > /dev/null || (echo "goreleaser not installed. Install from https://goreleaser.com/install/" && exit 1)
+	goreleaser build --snapshot --clean
+
+## release-test: Test release configuration without publishing
+release-test:
+	@echo "Testing release configuration..."
+	@which goreleaser > /dev/null || (echo "goreleaser not installed. Install from https://goreleaser.com/install/" && exit 1)
+	goreleaser check
+	goreleaser release --snapshot --skip=publish --clean
+
+## release: Create and publish a release (requires goreleaser and git tag)
+release:
+	@echo "Creating release..."
+	@which goreleaser > /dev/null || (echo "goreleaser not installed. Install from https://goreleaser.com/install/" && exit 1)
+	@git describe --exact-match --tags HEAD > /dev/null 2>&1 || (echo "Error: Not on a tagged commit. Create a tag first with: git tag v0.1.0" && exit 1)
+	goreleaser release --clean
 
 ## help: Show this help message
 help:
