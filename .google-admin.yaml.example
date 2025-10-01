@@ -1,0 +1,13 @@
+# Google Admin Client Configuration Example
+# Copy this file to $HOME/.google-admin.yaml and customize
+
+# Domain for your Google Workspace organization
+# This will be used when group names don't include a domain
+# Examples: "example.com", "mycompany.org"
+domain: "example.com"
+
+# You can also set this via environment variable:
+# export GOOGLE_ADMIN_DOMAIN="example.com"
+
+# Or via command-line flag:
+# gac --domain example.com user list

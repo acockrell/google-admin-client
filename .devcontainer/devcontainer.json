@@ -1,0 +1,44 @@
+{
+  "name": "gac Development",
+  "image": "mcr.microsoft.com/devcontainers/go:1.25",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "go.useLanguageServer": true,
+        "go.gopath": "/go",
+        "go.toolsManagement.autoUpdate": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "[go]": {
+          "editor.defaultFormatter": "golang.go"
+        }
+      },
+      "extensions": [
+        "golang.go",
+        "eamodio.gitlens",
+        "davidanson.vscode-markdownlint",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  },
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "postCreateCommand": "go mod download && go build -v ./...",
+
+  "remoteUser": "vscode",
+
+  "mounts": [
+    "source=${localEnv:HOME}/.credentials,target=/home/vscode/.credentials,type=bind,consistency=cached"
+  ],
+
+  "forwardPorts": [],
+
+  "runArgs": ["--init"]
+}
