@@ -216,23 +216,41 @@ Implementation details:
   - [x] Build and test on PR
   - [x] Run golangci-lint
   - [x] Security scanning (gosec, trivy)
-  - [ ] Automated releases
-- [ ] Set up goreleaser for multi-platform builds
-- [ ] Add release automation
-- [ ] Docker multi-arch images with proper labels
+  - [x] Automated releases
+- [x] Set up goreleaser for multi-platform builds
+- [x] Add release automation
+- [x] Docker multi-arch images with proper labels
 
 **Rationale:** Modernize CI/CD pipeline with automated testing and security scanning.
 
-**Status:** 🚧 Partial - CI workflows complete, release automation pending
+**Status:** ✅ Complete
 Implementation details:
 - **CI Workflow** (`.github/workflows/ci.yml`):
   - **Test Job**: Runs tests with race detection and coverage reporting on every PR and push to main
   - **Lint Job**: Runs golangci-lint with 5-minute timeout
   - **Security Job**: Runs both gosec and Trivy vulnerability scanners with SARIF output to GitHub Security tab
-  - **Build Job**: Cross-platform builds on Ubuntu, macOS, and Windows with Go 1.25
+  - **Build Job**: Cross-platform builds on Ubuntu and macOS with Go 1.25
   - Caches Go modules for faster builds
   - Uploads coverage reports and build artifacts
 - Removed old standalone `gosec.yml` workflow (now integrated into ci.yml)
+- **Release Automation** (`.github/workflows/release.yml`):
+  - Triggered automatically on version tags (e.g., `v0.1.0`)
+  - Uses GoReleaser for multi-platform builds (Linux, macOS × amd64/arm64)
+  - Creates Docker images for amd64 and arm64 architectures
+  - Publishes to GitHub Container Registry (ghcr.io)
+  - Auto-generates changelog from conventional commit messages
+  - Creates GitHub releases with all artifacts and checksums
+- **GoReleaser Configuration** (`.goreleaser.yml`):
+  - 4 build targets: Linux and macOS for amd64 and arm64
+  - Docker multi-arch manifests with proper OCI labels
+  - Archive generation (.tar.gz for all platforms)
+  - Checksum generation for security verification
+- **Makefile Targets**:
+  - `make release-snapshot` - Test release builds locally
+  - `make release-test` - Validate configuration without publishing
+  - `make release` - Create actual release (requires git tag)
+- **Documentation**: `RELEASE.md` with comprehensive release process guide
+- **PR #7**: https://github.com/acockrell/google-admin-client/pull/7
 
 ### 10. Documentation
 - [ ] Add installation instructions to README
