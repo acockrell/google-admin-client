@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"math/rand"
-	"time"
+	"crypto/rand"
+	"math/big"
 
 	"github.com/spf13/cobra"
 )
@@ -29,12 +29,18 @@ func init() {
 }
 
 func randomPassword(length int) string {
-	rand.Seed(time.Now().UnixNano())
-	var letterRunes = []rune("abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789")
+	const letterRunes = "abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
 
-	b := make([]rune, length)
+	b := make([]byte, length)
+	maxIdx := big.NewInt(int64(len(letterRunes)))
+
 	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+		n, err := rand.Int(rand.Reader, maxIdx)
+		if err != nil {
+			// If crypto/rand fails, this is a critical error
+			panic("failed to generate secure random number: " + err.Error())
+		}
+		b[i] = letterRunes[n.Int64()]
 	}
 	return string(b)
 }
