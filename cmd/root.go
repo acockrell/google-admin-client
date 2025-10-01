@@ -37,7 +37,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&clientSecret, "secret", clientSecret, "file containing client secret JSON")
 	rootCmd.PersistentFlags().StringVar(&cacheFile, "cache", cacheFile, "file containing oauth2 credential cache")
 	rootCmd.PersistentFlags().StringVar(&domain, "domain", "", "domain for email addresses (e.g., example.com)")
-	viper.BindPFlag("domain", rootCmd.PersistentFlags().Lookup("domain"))
+
+	// Bind domain flag to viper
+	if err := viper.BindPFlag("domain", rootCmd.PersistentFlags().Lookup("domain")); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to bind domain flag: %s\n", err)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.

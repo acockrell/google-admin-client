@@ -52,6 +52,12 @@ lint:
 	@which golangci-lint > /dev/null || (echo "golangci-lint not installed. Install from https://golangci-lint.run/usage/install/" && exit 1)
 	golangci-lint run ./...
 
+## gosec: Run security scanner (requires gosec)
+gosec:
+	@echo "Running security scanner..."
+	@which gosec > /dev/null || (echo "gosec not installed. Install with: go install github.com/securego/gosec/v2/cmd/gosec@latest" && exit 1)
+	gosec ./...
+
 ## fmt: Format code
 fmt:
 	@echo "Formatting code..."
@@ -93,8 +99,8 @@ run: build
 	@echo "Running $(BINARY_NAME)..."
 	./$(BUILD_DIR)/$(BINARY_NAME)
 
-## check: Run all checks (fmt, vet, lint, test)
-check: fmt vet lint test
+## check: Run all checks (fmt, vet, lint, gosec, test)
+check: fmt vet lint gosec test
 
 ## help: Show this help message
 help:

@@ -115,9 +115,36 @@ Implementation details:
 - Added `github.com/google/uuid v1.6.0` dependency for UUID validation
 - All tests passing (93 new validation tests + 36 existing tests)
 
+### 6. Fix gosec Security Issues
+- [x] **HIGH**: Fix weak RNG in password generation (`cmd/user.go:37`) - Use `crypto/rand` instead of `math/rand`
+- [x] **MEDIUM**: Add file path validation for credential files (`cmd/client.go:92, 161, 182`) - Prevent directory traversal
+- [x] **LOW**: Handle errors from `csv.Writer.Write()` (`cmd/user-list.go:120-125`)
+- [x] **LOW**: Handle errors from `viper.BindPFlag()` (`cmd/root.go:40`)
+
+**Rationale:** Fix security vulnerabilities identified by gosec scanner.
+
+**Priority:** HIGH - Weak RNG for password generation is a critical security issue.
+
+**Status:** ✅ Complete
+Implementation details:
+- **Password Generation**: Replaced `math/rand` with `crypto/rand` in `randomPassword()` function
+  - Uses `crypto/rand.Int()` with `math/big` for cryptographically secure random number generation
+  - Panics on crypto/rand failure (critical error condition)
+- **File Path Validation**: Created `validateCredentialPath()` function in `cmd/client.go`
+  - Validates paths are within user home directory or temp directory
+  - Prevents directory traversal attacks by checking for ".." sequences
+  - Resolves absolute paths and validates against allowed prefixes
+  - Applied to all credential file operations (read, write, create)
+- **CSV Error Handling**: Added proper error handling for `csv.Writer.Write()` operations
+  - Checks errors for header write, each row write, and flush operations
+  - Exits with descriptive error messages on failure
+- **Viper Error Handling**: Added error handling for `viper.BindPFlag()` in root command initialization
+  - Logs errors to stderr if flag binding fails
+- **gosec Results**: 0 issues remaining (3 nosec annotations with justification for validated file operations)
+
 ## Code Quality
 
-### 6. Remove Hardcoded Domain
+### 7. Remove Hardcoded Domain
 - [x] Add `domain` field to configuration file (.google-admin.yaml)
 - [x] Add `--domain` flag for command-line override
 - [x] Update viper configuration to read domain setting
@@ -144,7 +171,7 @@ Implementation details:
 - Smart detection: if group name contains "@", doesn't append domain
 - Build successful, all commands tested
 
-### 7. Error Handling
+### 8. Error Handling
 - [ ] Implement structured logging (zerolog or zap)
 - [ ] Add context to error messages
 - [ ] Use error wrapping with `fmt.Errorf` and `%w`
@@ -153,7 +180,7 @@ Implementation details:
 
 **Rationale:** Better debugging and error tracking.
 
-### 8. CI/CD Modernization
+### 9. CI/CD Modernization
 - [ ] Create GitHub Actions workflows
   - [ ] Build and test on PR
   - [ ] Run golangci-lint
@@ -165,7 +192,7 @@ Implementation details:
 
 **Rationale:** Modernize CI/CD pipeline with automated testing and security scanning.
 
-### 9. Documentation
+### 10. Documentation
 - [ ] Add installation instructions to README
 - [ ] Document OAuth2 setup process
 - [ ] Create CONTRIBUTING.md
@@ -178,7 +205,7 @@ Implementation details:
 
 ## Feature Enhancements
 
-### 10. Output Formats
+### 11. Output Formats
 - [ ] Add `--format` flag (json, csv, yaml, table)
 - [ ] Implement JSON output for all list commands
 - [ ] Add CSV export for user/group lists
@@ -187,7 +214,7 @@ Implementation details:
 
 **Rationale:** Better integration with automation scripts.
 
-### 11. Batch Operations
+### 12. Batch Operations
 - [ ] Support bulk user creation from CSV
 - [ ] Support bulk user creation from YAML
 - [ ] Add `--dry-run` flag for all commands
@@ -196,7 +223,7 @@ Implementation details:
 
 **Rationale:** Improve efficiency for large-scale operations.
 
-### 12. Modern CLI Features
+### 13. Modern CLI Features
 - [ ] Add shell completion (bash, zsh, fish)
 - [ ] Add interactive prompts for destructive operations
 - [ ] Add config validation command (`gac config validate`)
@@ -205,7 +232,7 @@ Implementation details:
 
 **Rationale:** Improve user experience and safety.
 
-### 13. Performance
+### 14. Performance
 - [ ] Add caching for group/user listings
 - [ ] Implement concurrent API calls where safe
 - [ ] Add request rate limiting
@@ -216,7 +243,7 @@ Implementation details:
 
 ## Nice to Have
 
-### 14. Additional Features
+### 15. Additional Features
 - [ ] Add user suspension/unsuspension commands
 - [ ] Add organizational unit management
 - [ ] Add alias management for users
@@ -224,7 +251,7 @@ Implementation details:
 - [ ] Add group settings management
 - [ ] Add audit log export
 
-### 15. Developer Experience
+### 16. Developer Experience
 - [x] Add Makefile for common tasks
 - [x] Add pre-commit hooks
 - [x] Set up development container (devcontainer)
