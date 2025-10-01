@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/viper"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -88,6 +89,28 @@ func validateCredentialPath(filePath string) error {
 	return nil
 }
 
+// checkFilePermissions checks if a file has overly permissive permissions
+// and warns the user if the file is readable by group or world
+func checkFilePermissions(filePath string) {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		// File doesn't exist or can't be accessed, skip permission check
+		return
+	}
+
+	mode := info.Mode().Perm()
+
+	// Check if file is readable by group (permission bit 040) or world (permission bit 004)
+	if mode&0044 != 0 {
+		fmt.Fprintf(os.Stderr, "WARNING: Credential file %s has insecure permissions (%04o)\n", filePath, mode)
+		fmt.Fprintf(os.Stderr, "Recommendation: Run 'chmod 600 %s' to restrict access\n", filePath)
+
+		if mode&0004 != 0 {
+			fmt.Fprintf(os.Stderr, "CRITICAL: File is world-readable! This is a security risk.\n")
+		}
+	}
+}
+
 func newAdminClient() (*admin.Service, error) {
 	client, err := newHTTPClient()
 	if err != nil {
@@ -132,6 +155,12 @@ func newDataTransferClient() (*datatransfer.Service, error) {
 
 // return an appropriately configured http.Client
 func newHTTPClient() (*http.Client, error) {
+	// Get client secret path from viper (supports flags, env vars, and config file)
+	if clientSecret == "" {
+		clientSecret = viper.GetString("client-secret")
+	}
+
+	// Fall back to default location if not set
 	if clientSecret == "" {
 		usr, err := user.Current()
 		if err != nil {
@@ -144,6 +173,9 @@ func newHTTPClient() (*http.Client, error) {
 	if err := validateCredentialPath(clientSecret); err != nil {
 		return nil, fmt.Errorf("invalid client secret path: %w", err)
 	}
+
+	// Check file permissions and warn if insecure
+	checkFilePermissions(clientSecret)
 
 	// #nosec G304 - Path is validated by validateCredentialPath() above
 	b, err := os.ReadFile(clientSecret)
@@ -195,6 +227,12 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 // tokenCacheFile generates credential file path/filename.
 // It returns the generated credential path/filename.
 func tokenCacheFile() (string, error) {
+	// Get cache file path from viper (supports flags, env vars, and config file)
+	if cacheFile == "" {
+		cacheFile = viper.GetString("cache-file")
+	}
+
+	// Fall back to default location if not set
 	if cacheFile == "" {
 		usr, err := user.Current()
 		if err != nil {
@@ -219,6 +257,9 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 	if err := validateCredentialPath(file); err != nil {
 		return nil, fmt.Errorf("invalid token file path: %w", err)
 	}
+
+	// Check file permissions and warn if insecure
+	checkFilePermissions(file)
 
 	// #nosec G304 - Path is validated by validateCredentialPath() above
 	f, err := os.Open(file)
@@ -248,7 +289,7 @@ func saveToken(file string, token *oauth2.Token) (err error) {
 
 	fmt.Printf("Saving credential file to: %s\n", file)
 	// #nosec G304 - Path is validated by validateCredentialPath() above
-	f, err := os.Create(file)
+	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return
 	}
