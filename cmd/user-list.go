@@ -115,16 +115,23 @@ func listUserRunFunc(cmd *cobra.Command, args []string) {
 			fmt.Printf("%s\n", buf)
 		} else if csvOutput {
 			w := csv.NewWriter(os.Stdout)
-			_ = w.Write([]string{"Name", "Email", "Admin", "OrgUnitPath"})
+			if err := w.Write([]string{"Name", "Email", "Admin", "OrgUnitPath"}); err != nil {
+				exitWithError(fmt.Sprintf("Failed to write CSV header: %s", err))
+			}
 			for _, user := range u.Users {
-				w.Write([]string{
+				if err := w.Write([]string{
 					user.Name.FullName,
 					user.PrimaryEmail,
 					strconv.FormatBool(user.IsAdmin),
 					user.OrgUnitPath,
-				})
+				}); err != nil {
+					exitWithError(fmt.Sprintf("Failed to write CSV row: %s", err))
+				}
 			}
 			w.Flush()
+			if err := w.Error(); err != nil {
+				exitWithError(fmt.Sprintf("CSV writer error: %s", err))
+			}
 		} else {
 			for _, user := range u.Users {
 				fmt.Printf("%s (%s) (Admin: %v) (OrgUnitPath: %s)\n", user.PrimaryEmail, user.Name.FullName, user.IsAdmin, user.OrgUnitPath)
