@@ -6,7 +6,7 @@ This document describes the release process for `gac` (Google Admin Client).
 
 Releases are automated using [GoReleaser](https://goreleaser.com/) and GitHub Actions. When a version tag is pushed to GitHub, the release workflow automatically:
 
-1. Builds binaries for multiple platforms (Linux, macOS, Windows × amd64/arm64)
+1. Builds binaries for multiple platforms (Linux, macOS × amd64/arm64)
 2. Creates Docker images for amd64 and arm64 architectures
 3. Generates checksums for all artifacts
 4. Creates a GitHub release with changelog
@@ -185,7 +185,6 @@ The release workflow (`.github/workflows/release.yml`) performs these steps:
 |----------|---------------|
 | Linux    | amd64, arm64  |
 | macOS    | amd64, arm64  |
-| Windows  | amd64         |
 
 ### Docker Images
 
