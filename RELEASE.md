@@ -229,11 +229,11 @@ git push origin v0.1.0
 
 ```bash
 # Validate configuration
-~/go/bin/goreleaser check
+goreleaser check
 
 # Test with environment variables
 export GITHUB_REPOSITORY_OWNER=acockrell
-~/go/bin/goreleaser check
+goreleaser check
 ```
 
 ### Docker images not appearing
