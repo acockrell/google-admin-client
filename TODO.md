@@ -81,13 +81,44 @@ Test files created:
 ## Security Improvements
 
 ### 4. Credential Management
-- [ ] Document secure credential storage practices
-- [ ] Add credential file permission checks (warn if world-readable)
+- [x] Document secure credential storage practices
+- [x] Add credential file permission checks (warn if world-readable)
 - [ ] Consider system keychain integration
-- [ ] Add environment variable support for credentials
-- [ ] Document OAuth2 scope requirements
+- [x] Add environment variable support for credentials
+- [x] Document OAuth2 scope requirements
 
 **Rationale:** Improve security posture for credential handling.
+
+**Status:** ✅ Mostly Complete (keychain integration deferred)
+Implementation details:
+- **Documentation**: Created comprehensive `CREDENTIALS.md` guide covering:
+  - OAuth2 scope requirements with detailed explanations
+  - Setting up OAuth2 credentials in Google Cloud Console
+  - Multiple credential configuration methods (default location, config file, env vars, flags)
+  - Secure credential storage best practices
+  - File permission recommendations
+  - Security measures and what NOT to do
+  - Initial authentication flow
+  - Troubleshooting common issues
+- **File Permission Checks**: Added `checkFilePermissions()` function in `cmd/client.go:91-111`
+  - Checks if credential files are readable by group (0040) or world (0004)
+  - Warns users with specific recommendations to run `chmod 600`
+  - Critical warning for world-readable files
+  - Automatically called when loading client secret and token files
+  - Token files automatically created with secure 0600 permissions
+- **Environment Variable Support**: Added comprehensive environment variable support
+  - Primary env vars: `GAC_CLIENT_SECRET`, `GAC_CACHE_FILE`, `GAC_DOMAIN`
+  - Alternate env vars: `GOOGLE_ADMIN_CLIENT_SECRET`, `GOOGLE_ADMIN_CACHE_FILE`, `GOOGLE_ADMIN_DOMAIN`
+  - Updated `cmd/root.go:64-72` with viper environment variable bindings
+  - Updated `cmd/client.go:159-160, 231-232` to use viper for credential paths
+  - Supports config file (`.google-admin.yaml`), environment variables, and command-line flags
+  - Updated flag names to `--client-secret` and `--cache-file` (old `--secret` and `--cache` deprecated)
+  - Priority order: CLI flags > environment variables > config file > default locations
+- **System Keychain Integration**: Deferred to future enhancement (requires OS-specific implementations)
+  - macOS: Keychain Access API
+  - Linux: Secret Service API / libsecret
+  - Windows: Windows Credential Manager
+  - Would add complexity for cross-platform support
 
 ### 5. Input Validation
 - [x] Add email address validation
