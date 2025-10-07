@@ -2,7 +2,9 @@
 
 ## Critical Updates
 
-### 1. Upgrade Go Version
+<details>
+<summary>✅ 1. Upgrade Go Version</summary>
+
 - [x] Update go.mod to Go 1.25
 - [x] Update Dockerfile to use golang:1.25-alpine
 - [x] Test all functionality with new Go version
@@ -17,7 +19,11 @@
 - All commands tested successfully locally
 - No test failures (no tests exist yet - see item #3)
 
-### 2. Update Dependencies
+</details>
+
+<details>
+<summary>✅ 2. Update Dependencies</summary>
+
 - [x] Run `go get -u ./...` to update all dependencies
 - [x] Update Google Cloud libraries (v0.103 → v0.123+)
 - [x] Test all functionality after updates
@@ -39,7 +45,11 @@ Major dependency updates:
 - Added new required dependencies for authentication and telemetry
 - Build successful, all commands tested and working
 
-### 3. Add Testing
+</details>
+
+<details>
+<summary>🚧 3. Add Testing</summary>
+
 - [x] Add unit tests for helper functions (parsePhone, parseAddress, etc.)
 - [x] Add unit tests for command flag parsing and registration
 - [x] Add tests for domain configuration (getDomain)
@@ -78,9 +88,13 @@ Test files created:
 4. Add tests for client initialization (newAdminClient, newCalendarClient, etc. currently at 0%)
 5. Consider testing error handling paths and edge cases
 
+</details>
+
 ## Security Improvements
 
-### 4. Credential Management
+<details>
+<summary>✅ 4. Credential Management</summary>
+
 - [x] Document secure credential storage practices
 - [x] Add credential file permission checks (warn if world-readable)
 - [ ] Consider system keychain integration
@@ -120,7 +134,11 @@ Implementation details:
   - Windows: Windows Credential Manager
   - Would add complexity for cross-platform support
 
-### 5. Input Validation
+</details>
+
+<details>
+<summary>✅ 5. Input Validation</summary>
+
 - [x] Add email address validation
 - [x] Add phone number format validation
 - [x] Add UUID format validation
@@ -146,7 +164,11 @@ Implementation details:
 - Added `github.com/google/uuid v1.6.0` dependency for UUID validation
 - All tests passing (93 new validation tests + 36 existing tests)
 
-### 6. Fix gosec Security Issues
+</details>
+
+<details>
+<summary>✅ 6. Fix gosec Security Issues</summary>
+
 - [x] **HIGH**: Fix weak RNG in password generation (`cmd/user.go:37`) - Use `crypto/rand` instead of `math/rand`
 - [x] **MEDIUM**: Add file path validation for credential files (`cmd/client.go:92, 161, 182`) - Prevent directory traversal
 - [x] **LOW**: Handle errors from `csv.Writer.Write()` (`cmd/user-list.go:120-125`)
@@ -173,9 +195,13 @@ Implementation details:
   - Logs errors to stderr if flag binding fails
 - **gosec Results**: 0 issues remaining (3 nosec annotations with justification for validated file operations)
 
+</details>
+
 ## Code Quality
 
-### 7. Remove Hardcoded Domain
+<details>
+<summary>✅ 7. Remove Hardcoded Domain</summary>
+
 - [x] Add `domain` field to configuration file (.google-admin.yaml)
 - [x] Add `--domain` flag for command-line override
 - [x] Update viper configuration to read domain setting
@@ -202,7 +228,11 @@ Implementation details:
 - Smart detection: if group name contains "@", doesn't append domain
 - Build successful, all commands tested
 
-### 8. Error Handling
+</details>
+
+<details>
+<summary>📋 8. Error Handling</summary>
+
 - [ ] Implement structured logging (zerolog or zap)
 - [ ] Add context to error messages
 - [ ] Use error wrapping with `fmt.Errorf` and `%w`
@@ -211,7 +241,11 @@ Implementation details:
 
 **Rationale:** Better debugging and error tracking.
 
-### 9. CI/CD Modernization
+</details>
+
+<details>
+<summary>✅ 9. CI/CD Modernization</summary>
+
 - [x] Create GitHub Actions workflows
   - [x] Build and test on PR
   - [x] Run golangci-lint
@@ -252,7 +286,11 @@ Implementation details:
 - **Documentation**: `RELEASE.md` with comprehensive release process guide
 - **PR #7**: https://github.com/acockrell/google-admin-client/pull/7
 
-### 10. Documentation
+</details>
+
+<details>
+<summary>📋 10. Documentation</summary>
+
 - [ ] Add installation instructions to README
 - [ ] Document OAuth2 setup process
 - [ ] Create CONTRIBUTING.md
@@ -263,9 +301,13 @@ Implementation details:
 
 **Rationale:** Improve onboarding and usability.
 
+</details>
+
 ## Feature Enhancements
 
-### 11. Output Formats
+<details>
+<summary>📋 11. Output Formats</summary>
+
 - [ ] Add `--format` flag (json, csv, yaml, table)
 - [ ] Implement JSON output for all list commands
 - [ ] Add CSV export for user/group lists
@@ -274,7 +316,11 @@ Implementation details:
 
 **Rationale:** Better integration with automation scripts.
 
-### 12. Batch Operations
+</details>
+
+<details>
+<summary>📋 12. Batch Operations</summary>
+
 - [ ] Support bulk user creation from CSV
 - [ ] Support bulk user creation from YAML
 - [ ] Add `--dry-run` flag for all commands
@@ -283,7 +329,11 @@ Implementation details:
 
 **Rationale:** Improve efficiency for large-scale operations.
 
-### 13. Modern CLI Features
+</details>
+
+<details>
+<summary>📋 13. Modern CLI Features</summary>
+
 - [ ] Add shell completion (bash, zsh, fish)
 - [ ] Add interactive prompts for destructive operations
 - [ ] Add config validation command (`gac config validate`)
@@ -292,7 +342,11 @@ Implementation details:
 
 **Rationale:** Improve user experience and safety.
 
-### 14. Performance
+</details>
+
+<details>
+<summary>📋 14. Performance</summary>
+
 - [ ] Add caching for group/user listings
 - [ ] Implement concurrent API calls where safe
 - [ ] Add request rate limiting
@@ -301,9 +355,13 @@ Implementation details:
 
 **Rationale:** Improve performance and handle API quotas gracefully.
 
+</details>
+
 ## Nice to Have
 
-### 15. Additional Features
+<details>
+<summary>📋 15. Additional Features</summary>
+
 - [ ] Add user suspension/unsuspension commands
 - [ ] Add organizational unit management
 - [ ] Add alias management for users
@@ -311,7 +369,11 @@ Implementation details:
 - [ ] Add group settings management
 - [ ] Add audit log export
 
-### 16. Developer Experience
+</details>
+
+<details>
+<summary>✅ 16. Developer Experience</summary>
+
 - [x] Add Makefile for common tasks
 - [x] Add pre-commit hooks
 - [x] Set up development container (devcontainer)
@@ -324,3 +386,5 @@ Implementation details:
 - **Devcontainer**: VS Code devcontainer configuration with Go 1.25, extensions, and credential mounting
 - **DEBUGGING.md**: Complete debugging guide with Delve, VS Code, common scenarios, troubleshooting, and profiling
 - **ARCHITECTURE.md**: Detailed architecture documentation covering design, data flow, components, and extension points
+
+</details>
