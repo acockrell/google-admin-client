@@ -402,32 +402,32 @@ google-admin-client/
 
 1. Create the command file in `cmd/`:
    ```go
-   // cmd/resource-action.go
+   // cmd/myfeature-action.go
    package cmd
 
    import (
        "github.com/spf13/cobra"
    )
 
-   var resourceActionCmd = &cobra.Command{
+   var myfeatureActionCmd = &cobra.Command{
        Use:   "action [args]",
        Short: "Brief description",
        Long:  `Detailed description with examples`,
-       RunE:  resourceActionRunFunc,
+       RunE:  myfeatureActionRunFunc,
    }
 
    func init() {
-       resourceCmd.AddCommand(resourceActionCmd)
+       myfeatureCmd.AddCommand(myfeatureActionCmd)
        // Add flags here
    }
 
-   func resourceActionRunFunc(cmd *cobra.Command, args []string) error {
+   func myfeatureActionRunFunc(cmd *cobra.Command, args []string) error {
        // Implementation
        return nil
    }
    ```
 
-2. Write tests in `cmd/resource-action_test.go`
+2. Write tests in `cmd/myfeature-action_test.go`
 3. Update README with usage examples
 4. Add integration with existing client setup
 

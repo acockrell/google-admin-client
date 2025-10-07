@@ -32,6 +32,8 @@ var (
 		admin.AdminDirectoryGroupReadonlyScope,
 		admin.AdminDirectoryGroupMemberReadonlyScope,
 		admin.AdminDirectoryGroupMemberScope,
+		admin.AdminDirectoryResourceCalendarReadonlyScope,
+		admin.AdminDirectoryResourceCalendarScope,
 		calendar.CalendarScope,
 		calendar.CalendarReadonlyScope,
 		calendar.CalendarEventsScope,
