@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ouDescription     string
-	ouParent          string
+	ouDescription      string
+	ouParent           string
 	ouBlockInheritance bool
 )
 
