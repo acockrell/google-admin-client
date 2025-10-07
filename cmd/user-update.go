@@ -15,20 +15,17 @@ import (
 
 // flags / parameters
 var (
-	address        = "Fulton, MD"
-	dept           string
-	employeeID     string
-	employeeType   string
-	forceUpdate    = false
-	managerEmail   string
-	ou             string
-	phone          string
-	removeUser     = false
-	title          string
-	githubProfile  string
-	amazonUsername string
-	vpnRole        string
-	clearPII       = false
+	address      string
+	dept         string
+	employeeID   string
+	employeeType string
+	forceUpdate  = false
+	managerEmail string
+	ou           string
+	phone        string
+	removeUser   = false
+	title        string
+	clearPII     = false
 	// defined in group-list
 	// groups  []string
 )
@@ -56,10 +53,6 @@ Usage
 	$ gac user update --phone 'mobile:703-555-5555; work:301-684-8080,555' jdoe@example.com
 	$ gac user update --remove jdoe@example.com
 	$ gac user update --title "Sales Engineer" jdoe@example.com
-	$ gac user update --type staff jdoe@example.com
-	$ gac user update --github-profile doeMaker jdoe@example.com
-	$ gac user update --amazon-username john.doe jdoe@example.com
-	$ gac user update --vpn-role default jdoe@example.com
 	$ gac user update --clear-pii jdoe@example.com
 
 `,
@@ -109,9 +102,6 @@ func init() {
 	updateUserCmd.Flags().StringVarP(&phone, "phone", "p", "", "phone")
 	updateUserCmd.Flags().BoolVarP(&removeUser, "remove", "r", removeUser, "disable user account")
 	updateUserCmd.Flags().StringVarP(&title, "title", "t", "", "title")
-	updateUserCmd.Flags().StringVarP(&githubProfile, "github-profile", "", "", "github profile")
-	updateUserCmd.Flags().StringVarP(&amazonUsername, "amazon-username", "", "", "amazon username")
-	updateUserCmd.Flags().StringVarP(&vpnRole, "vpn-role", "v", "", "vpn role")
 	updateUserCmd.Flags().BoolVarP(&clearPII, "clear-pii", "", clearPII, "clear personal information")
 }
 
@@ -216,15 +206,6 @@ func updateUserRunFunc(cmd *cobra.Command, args []string) {
 				// u, _ := client.Users.Get(email).Do(Projection("FULL"))
 				// fmt.Printf("DEBUG: %+v", string(u.CustomSchemas["Employee_Type"]))
 			}
-			if githubProfile != "" {
-				user.CustomSchemas = parseGithubProfile(githubProfile)
-			}
-			if amazonUsername != "" {
-				user.CustomSchemas = parseAmazonUsername(amazonUsername)
-			}
-			if vpnRole != "" {
-				user.CustomSchemas = parseVpnRole(vpnRole)
-			}
 			if ou != "" {
 				user.OrgUnitPath = ou
 			}
@@ -297,10 +278,6 @@ func clearUserPII(u *admin.User) {
 
 	u.RecoveryEmail = ""
 	u.RecoveryPhone = ""
-	u.CustomSchemas = parseGithubProfile("")
-	u.CustomSchemas = parseAmazonUsername("")
-	u.CustomSchemas = parseVpnRole("")
-
 }
 
 // parse a phone string like "mobile:<number>" or "mobile:<number>;work:<number>"
@@ -356,35 +333,6 @@ func parseType(employeeType string) map[string]googleapi.RawMessage {
 	}
 	schema["Employee_Type"] = t
 
-	return schema
-}
-
-// parse githubProfile custom attribute
-func parseGithubProfile(githubProfile string) map[string]googleapi.RawMessage {
-	schema := make(map[string]googleapi.RawMessage)
-	jsonData := `{"Profile": "` + githubProfile + `"}`
-	var t = []byte(jsonData)
-
-	schema["Github"] = t
-
-	return schema
-}
-
-// parse amazonUsername custom attribute
-func parseAmazonUsername(amazonUsername string) map[string]googleapi.RawMessage {
-	schema := make(map[string]googleapi.RawMessage)
-	jsonData := `{"Username": "` + amazonUsername + `"}`
-	var t = []byte(jsonData)
-	schema["Amazon"] = t
-	return schema
-}
-
-// parse vpnRole custom attribute
-func parseVpnRole(vpnRole string) map[string]googleapi.RawMessage {
-	schema := make(map[string]googleapi.RawMessage)
-	jsonData := `{"Role": "` + vpnRole + `"}`
-	var t = []byte(jsonData)
-	schema["OpenVPN"] = t
 	return schema
 }
 
