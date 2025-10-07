@@ -476,6 +476,58 @@ gac ou delete /TempOU --force
 
 **Note:** The OU must be empty (no users or sub-OUs) before it can be deleted.
 
+### User Alias Management
+
+Email aliases allow users to receive mail at multiple addresses that all deliver to the same mailbox. This is useful for department addresses, role-based addresses, or alternative names.
+
+#### List User Aliases
+
+```bash
+# List all aliases for a user
+gac alias list user@example.com
+
+# List aliases for a specific user
+gac alias list john.doe@example.com
+```
+
+The output shows:
+- The primary user email
+- All configured aliases
+- Total count of aliases
+
+#### Add User Alias
+
+```bash
+# Add a department alias
+gac alias add user@example.com support@example.com
+
+# Add an alternative name
+gac alias add john.doe@example.com jdoe@example.com
+
+# Add a role-based alias
+gac alias add admin@example.com administrator@example.com
+```
+
+**Requirements:**
+- The alias must be in a domain or alias domain managed by your organization
+- The alias cannot already be in use by another user or group
+- The user account must exist
+
+#### Remove User Alias
+
+```bash
+# Remove an alias with confirmation
+gac alias remove user@example.com old-alias@example.com
+
+# Remove an alias without confirmation
+gac alias remove user@example.com support@example.com --force
+```
+
+**Flags:**
+- `-f, --force` - Skip confirmation prompt
+
+**WARNING:** After removal, the alias address will no longer deliver mail to this user.
+
 ### Data Transfers
 
 Transfer document ownership from one user to another:
@@ -528,6 +580,14 @@ gac transfer --from olduser@example.com --to newuser@example.com
 | `gac ou create <ou-path>` | Create a new organizational unit |
 | `gac ou update <ou-path>` | Update an organizational unit |
 | `gac ou delete <ou-path>` | Delete an organizational unit |
+
+### Alias Commands
+
+| Command | Description |
+|---------|-------------|
+| `gac alias list <user-email>` | List aliases for a user |
+| `gac alias add <user-email> <alias-email>` | Add an alias to a user |
+| `gac alias remove <user-email> <alias-email>` | Remove an alias from a user |
 
 ### Transfer Commands
 

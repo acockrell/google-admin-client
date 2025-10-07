@@ -414,6 +414,74 @@ gac ou delete /Sales
 gac ou delete /Operations
 ```
 
+---
+
+### 8. User Alias Management
+
+**File**: [`alias-management.sh`](alias-management.sh)
+
+Demonstrate user alias management - adding, listing, and removing email aliases:
+
+```bash
+#!/bin/bash
+# User Alias Management Example
+
+set -euo pipefail
+
+# Configuration
+USER_EMAIL="user@example.com"
+ALIAS1="support@example.com"
+ALIAS2="help@example.com"
+ALIAS3="info@example.com"
+
+echo "Managing aliases for user..."
+
+# List current aliases
+gac alias list "$USER_EMAIL"
+
+# Add aliases
+echo "Adding aliases..."
+gac alias add "$USER_EMAIL" "$ALIAS1"
+gac alias add "$USER_EMAIL" "$ALIAS2"
+gac alias add "$USER_EMAIL" "$ALIAS3"
+
+# List aliases after adding
+gac alias list "$USER_EMAIL"
+
+# Remove an alias
+echo "Removing alias..."
+gac alias remove "$USER_EMAIL" "$ALIAS2" --force
+
+# List final aliases
+gac alias list "$USER_EMAIL"
+
+echo "✓ Alias management complete"
+```
+
+**Usage**:
+```bash
+# Set your user and alias emails
+export USER_EMAIL=user@example.com
+export ALIAS1=support@example.com
+export ALIAS2=help@example.com
+export ALIAS3=info@example.com
+
+./examples/alias-management.sh
+```
+
+**Cleanup**:
+```bash
+# Remove all demo aliases
+gac alias remove user@example.com support@example.com --force
+gac alias remove user@example.com info@example.com --force
+```
+
+**Common Use Cases**:
+- Department addresses (support@, sales@, info@)
+- Role-based addresses (admin@, webmaster@)
+- Alternative name formats (first.last@, firstlast@)
+- Legacy addresses when renaming users
+
 ## Best Practices
 
 ### Security
