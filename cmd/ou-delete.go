@@ -75,7 +75,12 @@ func ouDeleteRunFunc(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Type 'yes' to confirm deletion: ")
 
 		var confirmation string
-		fmt.Scanln(&confirmation)
+		_, err := fmt.Scanln(&confirmation)
+		if err != nil {
+			// If there's an error reading input (e.g., EOF), treat as cancellation
+			fmt.Fprintf(os.Stderr, "\nDeletion cancelled.\n")
+			return nil
+		}
 
 		if confirmation != "yes" {
 			fmt.Println("Deletion cancelled.")
