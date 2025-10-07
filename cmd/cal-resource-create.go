@@ -9,14 +9,14 @@ import (
 )
 
 var (
-	calResourceName        string
-	calResourceType        string
-	calResourceDescription string
-	calResourceCategory    string
-	calResourceBuildingId  string
-	calResourceFloorName   string
-	calResourceFloorSection string
-	calResourceCapacity    int64
+	calResourceName            string
+	calResourceType            string
+	calResourceDescription     string
+	calResourceCategory        string
+	calResourceBuildingId      string
+	calResourceFloorName       string
+	calResourceFloorSection    string
+	calResourceCapacity        int64
 	calResourceUserVisibleDesc string
 )
 
@@ -99,15 +99,15 @@ func calResourceCreateRunFunc(cmd *cobra.Command, args []string) error {
 
 	// Create the calendar resource
 	resource := &admin.CalendarResource{
-		ResourceId:              resourceId,
-		ResourceName:            calResourceName,
-		ResourceType:            apiResourceType,
-		ResourceDescription:     calResourceDescription,
-		ResourceCategory:        calResourceCategory,
-		BuildingId:              calResourceBuildingId,
-		FloorName:               calResourceFloorName,
-		FloorSection:            calResourceFloorSection,
-		UserVisibleDescription:  calResourceUserVisibleDesc,
+		ResourceId:             resourceId,
+		ResourceName:           calResourceName,
+		ResourceType:           apiResourceType,
+		ResourceDescription:    calResourceDescription,
+		ResourceCategory:       calResourceCategory,
+		BuildingId:             calResourceBuildingId,
+		FloorName:              calResourceFloorName,
+		FloorSection:           calResourceFloorSection,
+		UserVisibleDescription: calResourceUserVisibleDesc,
 	}
 
 	// Only set capacity if it's greater than 0
