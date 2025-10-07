@@ -16,6 +16,7 @@ A command-line tool for managing Google Workspace (formerly Google Apps) users, 
   - [User Management](#user-management)
   - [Group Management](#group-management)
   - [Calendar Operations](#calendar-operations)
+  - [Organizational Unit Management](#organizational-unit-management)
   - [Data Transfers](#data-transfers)
 - [Command Reference](#command-reference)
 - [Troubleshooting](#troubleshooting)
@@ -400,6 +401,81 @@ gac calendar update user@example.com \
 - `-l, --location` - Updated location
 - `-a, --attendee` - Updated attendees
 
+### Organizational Unit Management
+
+Organizational units (OUs) allow you to organize users and apply different policies to different groups.
+
+#### List Organizational Units
+
+```bash
+# List all organizational units
+gac ou list
+
+# List specific OU and its children
+gac ou list /Engineering
+
+# List only direct children
+gac ou list /Engineering --type children
+```
+
+**Flags:**
+- `-t, --type` - List type: all or children (default: "all")
+
+#### Create Organizational Unit
+
+```bash
+# Create a top-level OU
+gac ou create /Engineering --description "Engineering department"
+
+# Create a nested OU
+gac ou create /Engineering/Backend --description "Backend engineering team"
+
+# Create with inheritance blocking
+gac ou create /Contractors --block-inheritance
+```
+
+**Flags:**
+- `-d, --description` - Organizational unit description
+- `-p, --parent` - Parent OU path (auto-detected from path if not specified)
+- `-b, --block-inheritance` - Block policy inheritance from parent
+
+#### Update Organizational Unit
+
+```bash
+# Update description
+gac ou update /Engineering --description "Updated description"
+
+# Rename an OU
+gac ou update /Engineering --name "Engineering-Dept"
+
+# Move an OU to a different parent
+gac ou update /Engineering/QA --parent /Operations
+
+# Enable inheritance blocking
+gac ou update /Contractors --block-inheritance true
+```
+
+**Flags:**
+- `-n, --name` - New name for the organizational unit
+- `-d, --description` - New description
+- `-p, --parent` - New parent OU path
+- `-b, --block-inheritance` - Block policy inheritance (true/false)
+
+#### Delete Organizational Unit
+
+```bash
+# Delete an empty OU (with confirmation prompt)
+gac ou delete /Engineering/Archived
+
+# Force delete without confirmation
+gac ou delete /TempOU --force
+```
+
+**Flags:**
+- `-f, --force` - Skip confirmation prompt
+
+**Note:** The OU must be empty (no users or sub-OUs) before it can be deleted.
+
 ### Data Transfers
 
 Transfer document ownership from one user to another:
@@ -443,6 +519,15 @@ gac transfer --from olduser@example.com --to newuser@example.com
 | `gac calendar create [email]` | Create a calendar event |
 | `gac calendar list [email]` | List calendar events |
 | `gac calendar update [email]` | Update a calendar event |
+
+### Organizational Unit Commands
+
+| Command | Description |
+|---------|-------------|
+| `gac ou list [ou-path]` | List organizational units |
+| `gac ou create <ou-path>` | Create a new organizational unit |
+| `gac ou update <ou-path>` | Update an organizational unit |
+| `gac ou delete <ou-path>` | Delete an organizational unit |
 
 ### Transfer Commands
 

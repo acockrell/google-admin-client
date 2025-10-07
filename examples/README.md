@@ -350,6 +350,70 @@ jsmith@example.com,Sales,Account Executive,sales-mgr@example.com
 ./examples/batch-update-users.sh users-to-update.csv
 ```
 
+---
+
+### 7. Organizational Unit Restructure
+
+**File**: [`ou-restructure.sh`](ou-restructure.sh)
+
+Demonstrate OU management - creating structure, updating, and reorganizing:
+
+```bash
+#!/bin/bash
+# Organizational Unit Restructure Example
+
+set -euo pipefail
+
+echo "Creating organizational structure..."
+
+# Create top-level OUs
+gac ou create /Engineering --description "Engineering department"
+gac ou create /Sales --description "Sales department"
+gac ou create /Operations --description "Operations department"
+
+# Create Engineering sub-OUs
+gac ou create /Engineering/Backend --description "Backend engineering team"
+gac ou create /Engineering/Frontend --description "Frontend engineering team"
+gac ou create /Engineering/DevOps --description "DevOps and infrastructure team"
+
+# Create Sales sub-OUs
+gac ou create /Sales/Enterprise --description "Enterprise sales team"
+gac ou create /Sales/SMB --description "Small and medium business sales"
+
+echo "✓ Organizational structure created"
+
+# List the structure
+gac ou list
+
+# Update an OU
+gac ou update /Engineering --description "Engineering department - All technical teams"
+
+# Move an OU to a different parent
+gac ou update /Engineering/DevOps --parent /Operations --name "DevOps"
+
+echo "✓ OU reorganization complete"
+```
+
+**Usage**:
+```bash
+./examples/ou-restructure.sh
+```
+
+**Cleanup**:
+```bash
+# Delete sub-OUs first (must be empty of users)
+gac ou delete /Engineering/Backend
+gac ou delete /Engineering/Frontend
+gac ou delete /Sales/Enterprise
+gac ou delete /Sales/SMB
+gac ou delete /Operations/DevOps
+
+# Then delete top-level OUs
+gac ou delete /Engineering
+gac ou delete /Sales
+gac ou delete /Operations
+```
+
 ## Best Practices
 
 ### Security
