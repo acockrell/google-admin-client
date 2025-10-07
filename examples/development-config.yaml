@@ -1,0 +1,26 @@
+# Development Configuration for Google Admin Client (gac)
+#
+# Use this configuration for testing and development.
+# Keep separate credentials from production!
+
+# Development/testing domain
+# Use a separate Google Workspace domain for development
+domain: dev.example.com
+
+# Development credentials
+# Store in separate directory from production
+client-secret: ~/.credentials/dev_client_secret.json
+cache-file: ~/.credentials/dev_token.json
+
+# Usage:
+#   export GAC_CONFIG=~/.google-admin-dev.yaml
+#   gac user list
+#
+# Or:
+#   gac --config ~/.google-admin-dev.yaml user list
+
+# Development Best Practices:
+# - Never use production credentials in development
+# - Use a separate Google Workspace test domain if possible
+# - Test destructive operations here before running in production
+# - Keep development configs out of version control

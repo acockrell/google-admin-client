@@ -1,0 +1,18 @@
+# Basic Configuration for Google Admin Client (gac)
+#
+# This is a minimal configuration file to get you started.
+# Copy this file to ~/.google-admin.yaml and customize for your environment.
+
+# Your Google Workspace domain (required)
+# This domain is appended to group names and used for email validation
+domain: example.com
+
+# OAuth2 Client Secret file path (optional)
+# Download from Google Cloud Console > APIs & Services > Credentials
+# Default: ~/.credentials/client_secret.json
+client-secret: ~/.credentials/client_secret.json
+
+# OAuth2 Token cache file path (optional)
+# This file stores your authentication token after initial login
+# Default: ~/.credentials/gac.json
+cache-file: ~/.credentials/gac.json
