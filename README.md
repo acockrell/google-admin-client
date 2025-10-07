@@ -16,6 +16,7 @@ A command-line tool for managing Google Workspace (formerly Google Apps) users, 
   - [User Management](#user-management)
   - [Group Management](#group-management)
   - [Calendar Operations](#calendar-operations)
+  - [Calendar Resource Management](#calendar-resource-management)
   - [Organizational Unit Management](#organizational-unit-management)
   - [Data Transfers](#data-transfers)
 - [Command Reference](#command-reference)
@@ -33,6 +34,7 @@ A command-line tool for managing Google Workspace (formerly Google Apps) users, 
 - **User Management**: Create, list, and update users with comprehensive profile support
 - **Group Management**: List groups and manage memberships
 - **Calendar Operations**: Create, list, and update calendar events
+- **Calendar Resource Management**: Manage bookable calendar resources like conference rooms and equipment
 - **Data Transfers**: Transfer ownership of documents and resources between users
 - **Secure Authentication**: OAuth2 authentication with automatic token refresh
 - **Flexible Configuration**: Support for config files, environment variables, and CLI flags
@@ -461,6 +463,104 @@ gac calendar update user@example.com \
 - `-e, --end` - Updated end time
 - `-l, --location` - Updated location
 - `-a, --attendee` - Updated attendees
+
+### Calendar Resource Management
+
+Calendar resources are bookable items such as conference rooms, equipment, and other shared resources in your Google Workspace domain.
+
+#### List Calendar Resources
+
+```bash
+# List all calendar resources
+gac cal-resource list
+
+# List only conference rooms
+gac cal-resource list --type room
+
+# List only equipment
+gac cal-resource list --type equipment
+```
+
+**Flags:**
+- `-t, --type` - Resource type filter: all, room, equipment, or other (default: "all")
+
+#### Create Calendar Resource
+
+```bash
+# Create a conference room
+gac cal-resource create conf-room-a \
+  --name "Conference Room A" \
+  --type room \
+  --capacity 12 \
+  --building-id main-bldg \
+  --floor "3rd Floor"
+
+# Create equipment
+gac cal-resource create projector-hd-1 \
+  --name "HD Projector" \
+  --type equipment \
+  --category "AV Equipment" \
+  --description "High-definition projector for presentations"
+
+# Create a resource with location details
+gac cal-resource create exec-boardroom \
+  --name "Executive Boardroom" \
+  --type room \
+  --capacity 20 \
+  --building-id hq-building \
+  --floor "10th Floor"
+```
+
+**Flags:**
+- `-n, --name` - Resource name (required)
+- `-t, --type` - Resource type: room, equipment, or other (default: "room")
+- `-d, --description` - Resource description
+- `-c, --category` - Resource category
+- `-b, --building-id` - Building ID where resource is located
+- `-f, --floor` - Floor name/number
+- `-s, --section` - Floor section
+- `--capacity` - Resource capacity (for rooms)
+- `--user-description` - User-visible description
+
+#### Update Calendar Resource
+
+```bash
+# Update room capacity
+gac cal-resource update conf-room-a --capacity 15
+
+# Update name and description
+gac cal-resource update conf-room-a \
+  --name "Conference Room A (Renovated)" \
+  --description "Newly renovated conference room"
+
+# Update building and floor
+gac cal-resource update room-123 \
+  --building-id new-building \
+  --floor "5th Floor"
+```
+
+**Flags:**
+- `-n, --name` - Updated resource name
+- `-d, --description` - Updated resource description
+- `-c, --category` - Updated resource category
+- `-b, --building-id` - Updated building ID
+- `-f, --floor` - Updated floor name/number
+- `-s, --section` - Updated floor section
+- `--capacity` - Updated resource capacity
+- `--user-description` - Updated user-visible description
+
+#### Delete Calendar Resource
+
+```bash
+# Delete with confirmation prompt
+gac cal-resource delete old-projector
+
+# Delete without confirmation
+gac cal-resource delete conf-room-archived --force
+```
+
+**Flags:**
+- `-f, --force` - Skip confirmation prompt
 
 ### Organizational Unit Management
 

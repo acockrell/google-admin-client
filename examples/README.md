@@ -570,6 +570,102 @@ export SUSPENSION_REASON="Extended leave"
 - Have clear unsuspension approval process
 - Communicate with affected users when appropriate
 
+## 10. Calendar Resource Management
+
+Manage calendar resources like conference rooms, equipment, and other bookable items.
+
+**File**: [`cal-resource-management.sh`](cal-resource-management.sh)
+
+**What it demonstrates**:
+- Creating conference room resources with capacity and features
+- Creating equipment resources
+- Listing and filtering resources by type
+- Updating resource properties
+- Deleting resources
+
+**Key commands**:
+```bash
+# Create a conference room
+gac cal-resource create conf-room-a \
+  --name "Conference Room A" \
+  --type room \
+  --capacity 12 \
+  --building-id main-bldg \
+  --floor "3rd Floor"
+
+# Create equipment
+gac cal-resource create projector-1 \
+  --name "HD Projector" \
+  --type equipment \
+  --category "AV Equipment"
+
+# List all resources
+gac cal-resource list
+
+# List only rooms
+gac cal-resource list --type room
+
+# Update capacity
+gac cal-resource update conf-room-a --capacity 15
+
+# Delete resource
+gac cal-resource delete old-projector --force
+```
+
+**Usage**:
+```bash
+# Optionally set building ID
+export BUILDING_ID=main-bldg
+
+./examples/cal-resource-management.sh
+```
+
+**Common Resource Types**:
+
+1. **Conference Rooms**:
+   ```bash
+   gac cal-resource create exec-boardroom \
+     --name "Executive Boardroom" \
+     --type room \
+     --capacity 20 \
+     --building-id headquarters \
+     --floor "10th Floor"
+   ```
+
+2. **Equipment**:
+   ```bash
+   gac cal-resource create laptop-loaner-5 \
+     --name "Loaner Laptop #5" \
+     --type equipment \
+     --category "Computers" \
+     --description "MacBook Pro for temporary employee use"
+   ```
+
+3. **Other Resources**:
+   ```bash
+   gac cal-resource create parking-spot-a1 \
+     --name "Parking Spot A1" \
+     --type other \
+     --category "Parking" \
+     --description "Reserved parking near main entrance"
+   ```
+
+**Key Points**:
+- Each resource gets a unique email address for calendar booking
+- Resources can be organized by building, floor, and section
+- Capacity prevents overbooking of rooms
+- Resource types: room, equipment, or other
+- Features are displayed when listing but must be managed separately through the Google Admin Console
+
+**Best Practices**:
+- Use consistent naming conventions (e.g., `bldg-floor-room-number`)
+- Set accurate capacity to prevent overbooking
+- Organize resources hierarchically with buildings and floors
+- Include user-friendly descriptions
+- Use meaningful categories for equipment (e.g., "AV Equipment", "Computers")
+- Regularly audit and remove unused resources
+- Document resource policies (e.g., booking limits, approval requirements)
+
 ## Best Practices
 
 ### Security

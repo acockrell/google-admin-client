@@ -389,11 +389,11 @@ Implementation details:
 - [x] Add user suspension/unsuspension commands
 - [x] Add organizational unit management
 - [x] Add alias management for users
-- [ ] Add calendar resource management
+- [x] Add calendar resource management
 - [ ] Add group settings management
 - [ ] Add audit log export
 
-**Status:** 🚧 In Progress (3/6 features complete)
+**Status:** 🚧 In Progress (4/6 features complete)
 
 **Organizational Unit Management** - ✅ Complete
 Implementation details:
@@ -501,6 +501,62 @@ Implementation details:
   - Security incident workflow
   - Extended leave workflow
   - Best practices for suspension management
+
+**Calendar Resource Management** - ✅ Complete
+Implementation details:
+- **`gac cal-resource list`**: List all calendar resources or filter by type
+  - Supports `--type` flag (all/room/equipment/other) for filtering
+  - Displays resource details including email, capacity, building, floor
+  - Shows building names and resource features
+  - Organized display with relevant metadata
+- **`gac cal-resource create`**: Create new calendar resources
+  - Supports multiple resource types: room, equipment, other
+  - Configurable capacity, building, floor, and features
+  - User-visible descriptions for booking clarity
+  - Category and location metadata
+  - Auto-generates unique resource email addresses
+- **`gac cal-resource update`**: Update existing calendar resources
+  - Update name, description, capacity, or location
+  - Supports partial updates (only specified fields changed)
+  - Preserves unmodified resource attributes
+  - No downtime during updates
+- **`gac cal-resource delete`**: Delete calendar resources
+  - Confirmation prompt (skippable with `--force`)
+  - Shows resource details before deletion
+  - Provides helpful error messages for common failures
+  - Warns about impact on existing bookings
+- **Tests**: Added comprehensive test suite in `cmd/resource_test.go`
+  - Tests for command existence and structure
+  - Validates all flags are present for each command
+  - Tests command registration with root
+  - All tests passing
+- **Documentation**:
+  - README.md updated with calendar resource management section and examples
+  - examples/cal-resource-management.sh demo script
+  - examples/README.md updated with resource example (Section 10)
+- **Scopes Added**:
+  - Added `admin.AdminDirectoryResourceCalendarReadonlyScope`
+  - Added `admin.AdminDirectoryResourceCalendarScope`
+- **Files Created**:
+  - `cmd/cal-resource.go` - Root cal-resource command
+  - `cmd/cal-resource-list.go` - List calendar resources
+  - `cmd/cal-resource-create.go` - Create calendar resources
+  - `cmd/cal-resource-update.go` - Update calendar resources
+  - `cmd/cal-resource-delete.go` - Delete calendar resources
+  - `cmd/cal-resource_test.go` - Test suite
+  - `examples/cal-resource-management.sh` - Demo script
+- **Common Use Cases**:
+  - Conference rooms and meeting spaces
+  - Equipment (projectors, cameras, laptops)
+  - Company vehicles
+  - Shared workspaces and hot desks
+  - Parking spots
+- **Features Supported**:
+  - Video conferencing capabilities
+  - Whiteboard availability
+  - Phone/audio equipment
+  - Display screens
+  - Custom feature tags
 
 </details>
 
