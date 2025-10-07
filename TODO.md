@@ -384,14 +384,47 @@ Implementation details:
 ## Nice to Have
 
 <details>
-<summary>📋 15. Additional Features</summary>
+<summary>🚧 15. Additional Features</summary>
 
 - [ ] Add user suspension/unsuspension commands
-- [ ] Add organizational unit management
+- [x] Add organizational unit management
 - [ ] Add alias management for users
 - [ ] Add calendar resource management
 - [ ] Add group settings management
 - [ ] Add audit log export
+
+**Status:** 🚧 In Progress (1/6 features complete)
+
+**Organizational Unit Management** - ✅ Complete
+Implementation details:
+- **`gac ou list`**: List all organizational units or specific OU with children
+  - Supports `--type` flag (all/children) for filtering
+  - Hierarchical display with indentation based on depth
+  - Shows path, description, parent, ID, and inheritance settings
+- **`gac ou create`**: Create new organizational units
+  - Validates OU path format (must start with /)
+  - Auto-detects parent from path or accepts `--parent` flag
+  - Supports `--description` and `--block-inheritance` flags
+  - Provides clear examples for top-level and nested OUs
+- **`gac ou update`**: Update existing organizational units
+  - Update name, description, parent (move OU), or block inheritance
+  - Supports partial updates (only specified fields changed)
+  - Warns about impacts of moving OUs
+- **`gac ou delete`**: Delete organizational units
+  - Confirmation prompt (skippable with `--force`)
+  - OU must be empty (no users or sub-OUs)
+  - Provides helpful error messages for common failures
+- **Tests**: Added comprehensive test suite in `cmd/ou_test.go`
+  - Tests for command existence and structure
+  - Validates all flags are present
+  - All 140 tests passing
+- **Files Created**:
+  - `cmd/ou.go` - Root OU command
+  - `cmd/ou-list.go` - List organizational units
+  - `cmd/ou-create.go` - Create organizational units
+  - `cmd/ou-update.go` - Update organizational units
+  - `cmd/ou-delete.go` - Delete organizational units
+  - `cmd/ou_test.go` - Test suite
 
 </details>
 
