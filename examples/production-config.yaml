@@ -1,0 +1,26 @@
+# Production Configuration for Google Admin Client (gac)
+#
+# This configuration uses custom paths suitable for production deployment.
+# Use with: gac --config /etc/gac/production-config.yaml <command>
+
+# Production Google Workspace domain
+domain: company.com
+
+# OAuth2 credentials in system directories
+# Store credentials in secure, system-wide locations with restricted permissions
+client-secret: /etc/gac/client_secret.json
+cache-file: /var/lib/gac/token.json
+
+# Security Notes:
+# 1. Set restrictive file permissions:
+#    chmod 600 /etc/gac/client_secret.json
+#    chmod 600 /var/lib/gac/token.json
+#    chown gac-service:gac-service /etc/gac/* /var/lib/gac/*
+#
+# 2. Consider using a service account for automated operations
+#
+# 3. Enable audit logging for production operations
+#
+# 4. Rotate credentials regularly
+#
+# 5. Use environment-specific credentials (don't share dev and prod)

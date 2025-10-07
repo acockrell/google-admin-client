@@ -1,0 +1,4 @@
+email,department,title,manager
+jdoe@example.com,Engineering,Senior Software Engineer,eng-manager@example.com
+jsmith@example.com,Sales,Account Executive,sales-manager@example.com
+bwilson@example.com,Marketing,Marketing Specialist,marketing-manager@example.com
