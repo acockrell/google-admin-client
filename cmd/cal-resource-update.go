@@ -9,13 +9,13 @@ import (
 )
 
 var (
-	updateCalResourceName        string
-	updateCalResourceDescription string
-	updateCalResourceCategory    string
-	updateCalResourceBuildingId  string
-	updateCalResourceFloorName   string
-	updateCalResourceFloorSection string
-	updateCalResourceCapacity    int64
+	updateCalResourceName            string
+	updateCalResourceDescription     string
+	updateCalResourceCategory        string
+	updateCalResourceBuildingId      string
+	updateCalResourceFloorName       string
+	updateCalResourceFloorSection    string
+	updateCalResourceCapacity        int64
 	updateCalResourceUserVisibleDesc string
 )
 
@@ -91,16 +91,16 @@ func calResourceUpdateRunFunc(cmd *cobra.Command, args []string) error {
 	// Start with the existing resource
 	// Note: FeatureInstances is omitted as it's managed separately
 	resource := &admin.CalendarResource{
-		ResourceId:              existing.ResourceId,
-		ResourceName:            existing.ResourceName,
-		ResourceType:            existing.ResourceType,
-		ResourceDescription:     existing.ResourceDescription,
-		ResourceCategory:        existing.ResourceCategory,
-		BuildingId:              existing.BuildingId,
-		FloorName:               existing.FloorName,
-		FloorSection:            existing.FloorSection,
-		UserVisibleDescription:  existing.UserVisibleDescription,
-		Capacity:                existing.Capacity,
+		ResourceId:             existing.ResourceId,
+		ResourceName:           existing.ResourceName,
+		ResourceType:           existing.ResourceType,
+		ResourceDescription:    existing.ResourceDescription,
+		ResourceCategory:       existing.ResourceCategory,
+		BuildingId:             existing.BuildingId,
+		FloorName:              existing.FloorName,
+		FloorSection:           existing.FloorSection,
+		UserVisibleDescription: existing.UserVisibleDescription,
+		Capacity:               existing.Capacity,
 	}
 
 	// Update only the fields that were specified
