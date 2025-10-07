@@ -300,6 +300,67 @@ gac user update --clear-pii jdoe@example.com
 - `-r, --remove` - Disable user account
 - `--clear-pii` - Clear personal information
 
+#### Suspend User Account
+
+```bash
+# Suspend a user with confirmation
+gac user suspend user@example.com
+
+# Suspend with a reason
+gac user suspend user@example.com --reason "Left company"
+
+# Suspend without confirmation
+gac user suspend user@example.com --force
+```
+
+**Description:**
+
+Suspends a user account, which prevents the user from:
+- Signing in to their account
+- Accessing any Google Workspace services (Gmail, Drive, Calendar, etc.)
+- Receiving new emails (emails will bounce)
+
+The account data is preserved and can be restored by unsuspending the account.
+
+**Flags:**
+- `-r, --reason` - Reason for suspension (optional)
+- `-f, --force` - Skip confirmation prompt
+
+**Common use cases:**
+- Employee termination or departure
+- Policy violations or security incidents
+- Account compromise or suspicious activity
+- Extended leave or sabbatical
+
+#### Unsuspend User Account
+
+```bash
+# Unsuspend a user with confirmation
+gac user unsuspend user@example.com
+
+# Unsuspend without confirmation
+gac user unsuspend user@example.com --force
+```
+
+**Description:**
+
+Unsuspends a previously suspended user account, restoring the user's ability to:
+- Sign in to their account
+- Access all Google Workspace services (Gmail, Drive, Calendar, etc.)
+- Send and receive emails
+- Access their data and documents
+
+All account data and settings are preserved during suspension and will be available after unsuspending.
+
+**Flags:**
+- `-f, --force` - Skip confirmation prompt
+
+**Common use cases:**
+- Restoring access after employee returns from leave
+- Correcting accidental suspensions
+- Restoring accounts after security incidents are resolved
+- Re-enabling accounts after policy violations are addressed
+
 ### Group Management
 
 #### List Groups
@@ -557,6 +618,8 @@ gac transfer --from olduser@example.com --to newuser@example.com
 | `gac user create [email]` | Create a new user |
 | `gac user list [email]` | List users or get details for specific user |
 | `gac user update [email]` | Update user information |
+| `gac user suspend <user-email>` | Suspend a user account |
+| `gac user unsuspend <user-email>` | Unsuspend (restore) a user account |
 
 ### Group Commands
 
