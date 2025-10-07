@@ -386,14 +386,14 @@ Implementation details:
 <details>
 <summary>🚧 15. Additional Features</summary>
 
-- [ ] Add user suspension/unsuspension commands
+- [x] Add user suspension/unsuspension commands
 - [x] Add organizational unit management
 - [x] Add alias management for users
 - [ ] Add calendar resource management
 - [ ] Add group settings management
 - [ ] Add audit log export
 
-**Status:** 🚧 In Progress (2/6 features complete)
+**Status:** 🚧 In Progress (3/6 features complete)
 
 **Organizational Unit Management** - ✅ Complete
 Implementation details:
@@ -462,6 +462,45 @@ Implementation details:
   - Role-based addresses (admin@, webmaster@)
   - Alternative name formats (first.last@, firstlast@)
   - Legacy addresses when renaming users
+
+**User Suspension/Unsuspension** - ✅ Complete
+Implementation details:
+- **`gac user suspend`**: Suspend user accounts
+  - Optional suspension reason tracking (`--reason` flag)
+  - Confirmation prompt (skippable with `--force` flag)
+  - Email validation for user addresses
+  - Prevents users from signing in and accessing services
+  - Preserves all account data for restoration
+  - ForceSendFields to ensure boolean values are sent to API
+- **`gac user unsuspend`**: Unsuspend (restore) user accounts
+  - Restores full account access
+  - Confirmation prompt (skippable with `--force` flag)
+  - Clear communication of restored capabilities
+  - Email validation for user addresses
+- **Tests**: Added comprehensive test suite in `cmd/user_suspend_test.go`
+  - Tests for command existence and structure
+  - Validates all flags are present
+  - Tests for command registration
+  - All 152 tests passing
+- **Documentation**:
+  - README.md updated with suspension commands, examples, and use cases
+  - examples/user-suspension.sh demo script
+  - examples/README.md updated with suspension example (Section 9)
+- **Files Created**:
+  - `cmd/user-suspend.go` - Suspend user accounts
+  - `cmd/user-unsuspend.go` - Unsuspend user accounts
+  - `cmd/user_suspend_test.go` - Test suite
+  - `examples/user-suspension.sh` - Demo script
+- **Use Cases**:
+  - Employee termination or departure
+  - Policy violations or security incidents
+  - Account compromise or suspicious activity
+  - Extended leave or sabbatical
+- **Workflows Documented**:
+  - Employee departure workflow
+  - Security incident workflow
+  - Extended leave workflow
+  - Best practices for suspension management
 
 </details>
 
