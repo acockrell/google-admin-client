@@ -82,7 +82,7 @@ func ouListRunFunc(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if result.OrganizationUnits == nil || len(result.OrganizationUnits) == 0 {
+	if len(result.OrganizationUnits) == 0 {
 		fmt.Println("No organizational units found.")
 		return nil
 	}

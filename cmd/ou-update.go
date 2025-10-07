@@ -97,13 +97,14 @@ func ouUpdateRunFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	if ouUpdateBlock != "" {
-		if ouUpdateBlock == "true" {
+		switch ouUpdateBlock {
+		case "true":
 			ou.BlockInheritance = true
 			ou.ForceSendFields = append(ou.ForceSendFields, "BlockInheritance")
-		} else if ouUpdateBlock == "false" {
+		case "false":
 			ou.BlockInheritance = false
 			ou.ForceSendFields = append(ou.ForceSendFields, "BlockInheritance")
-		} else {
+		default:
 			fmt.Fprintf(os.Stderr, "Error: --block-inheritance must be 'true' or 'false'\n")
 			return fmt.Errorf("invalid block-inheritance value")
 		}
