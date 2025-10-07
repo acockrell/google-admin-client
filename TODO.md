@@ -388,12 +388,12 @@ Implementation details:
 
 - [ ] Add user suspension/unsuspension commands
 - [x] Add organizational unit management
-- [ ] Add alias management for users
+- [x] Add alias management for users
 - [ ] Add calendar resource management
 - [ ] Add group settings management
 - [ ] Add audit log export
 
-**Status:** 🚧 In Progress (1/6 features complete)
+**Status:** 🚧 In Progress (2/6 features complete)
 
 **Organizational Unit Management** - ✅ Complete
 Implementation details:
@@ -425,6 +425,43 @@ Implementation details:
   - `cmd/ou-update.go` - Update organizational units
   - `cmd/ou-delete.go` - Delete organizational units
   - `cmd/ou_test.go` - Test suite
+
+**User Alias Management** - ✅ Complete
+Implementation details:
+- **`gac alias list`**: List all email aliases for a user
+  - Displays primary user email, all aliases, and total count
+  - Handles Google API's []interface{} response with type assertions
+  - Email validation for user addresses
+- **`gac alias add`**: Add email alias to a user
+  - Validates both user email and alias email formats
+  - Checks alias is in managed domains
+  - Provides clear error messages for conflicts
+  - Shows requirements and common use cases
+- **`gac alias remove`**: Remove email alias from a user
+  - Confirmation prompt (skippable with `--force` flag)
+  - Email validation for both addresses
+  - Warning about mail delivery impact
+  - Helpful error messages for common failures
+- **Tests**: Added comprehensive test suite in `cmd/alias_test.go`
+  - Tests for command existence and structure
+  - Validates all flags are present
+  - All 146 tests passing
+- **Documentation**:
+  - README.md updated with alias management section and examples
+  - examples/alias-management.sh demo script
+  - examples/README.md updated with alias example (Section 8)
+- **Files Created**:
+  - `cmd/alias.go` - Root alias command
+  - `cmd/alias-list.go` - List user aliases
+  - `cmd/alias-add.go` - Add user alias
+  - `cmd/alias-remove.go` - Remove user alias
+  - `cmd/alias_test.go` - Test suite
+  - `examples/alias-management.sh` - Demo script
+- **Common Use Cases**:
+  - Department addresses (support@, sales@, info@)
+  - Role-based addresses (admin@, webmaster@)
+  - Alternative name formats (first.last@, firstlast@)
+  - Legacy addresses when renaming users
 
 </details>
 
