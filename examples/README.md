@@ -482,6 +482,94 @@ gac alias remove user@example.com info@example.com --force
 - Alternative name formats (first.last@, firstlast@)
 - Legacy addresses when renaming users
 
+---
+
+### 9. User Account Suspension
+
+**File**: [`user-suspension.sh`](user-suspension.sh)
+
+Demonstrate user account suspension and unsuspension for various scenarios:
+
+```bash
+#!/bin/bash
+# User Account Suspension Example
+
+set -euo pipefail
+
+# Configuration
+USER_EMAIL="user@example.com"
+SUSPENSION_REASON="Demo suspension for testing"
+
+echo "Suspending user account..."
+
+# Check current status
+gac user list "$USER_EMAIL"
+
+# Suspend the user
+gac user suspend "$USER_EMAIL" --reason "$SUSPENSION_REASON" --force
+
+# Verify suspension
+gac user list "$USER_EMAIL"
+
+# Unsuspend the user
+gac user unsuspend "$USER_EMAIL" --force
+
+echo "✓ Suspension demo complete"
+```
+
+**Usage**:
+```bash
+# Set your user email
+export USER_EMAIL=user@example.com
+export SUSPENSION_REASON="Extended leave"
+
+./examples/user-suspension.sh
+```
+
+**Common Workflows**:
+
+1. **Employee Departure**:
+   ```bash
+   # Suspend account immediately
+   gac user suspend departing@example.com --reason "Employee departure"
+
+   # Transfer data ownership (see offboarding example)
+   # Delete account after retention period
+   ```
+
+2. **Security Incident**:
+   ```bash
+   # Immediate suspension
+   gac user suspend compromised@example.com --reason "Security incident" --force
+
+   # Investigate and resolve
+   # Unsuspend after resolution
+   gac user unsuspend compromised@example.com --force
+   ```
+
+3. **Extended Leave**:
+   ```bash
+   # Suspend during leave period
+   gac user suspend onleave@example.com --reason "Extended leave - 3 months"
+
+   # Unsuspend on return
+   gac user unsuspend onleave@example.com
+   ```
+
+**Key Points**:
+- Suspended users cannot sign in or access any Google Workspace services
+- Emails to suspended accounts will bounce
+- All data is preserved during suspension
+- Unsuspending immediately restores full access
+- Always document suspension reasons for audit purposes
+
+**Best Practices**:
+- Provide clear suspension reasons
+- Document suspensions in ticketing system
+- Review suspended accounts monthly
+- Have clear unsuspension approval process
+- Communicate with affected users when appropriate
+
 ## Best Practices
 
 ### Security
