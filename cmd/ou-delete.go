@@ -67,25 +67,10 @@ func ouDeleteRunFunc(cmd *cobra.Command, args []string) error {
 	ouPath := args[0]
 	customerID := "my_customer"
 
-	// Show warning and prompt for confirmation unless --force is used
-	if !ouDeleteForce {
-		fmt.Printf("WARNING: You are about to delete organizational unit: %s\n", ouPath)
-		fmt.Printf("This operation cannot be undone.\n\n")
-		fmt.Printf("The OU must be empty (no users) to be deleted.\n\n")
-		fmt.Printf("Type 'yes' to confirm deletion: ")
-
-		var confirmation string
-		_, err := fmt.Scanln(&confirmation)
-		if err != nil {
-			// If there's an error reading input (e.g., EOF), treat as cancellation
-			fmt.Fprintf(os.Stderr, "\nDeletion cancelled.\n")
-			return nil
-		}
-
-		if confirmation != "yes" {
-			fmt.Println("Deletion cancelled.")
-			return nil
-		}
+	// Show warning and prompt for confirmation unless --force or --yes is used
+	additionalInfo := "The OU must be empty (no users) to be deleted."
+	if !confirmDeletion("organizational unit", ouPath, additionalInfo, ouDeleteForce) {
+		return nil
 	}
 
 	// Delete the organizational unit

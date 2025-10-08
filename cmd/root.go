@@ -15,6 +15,7 @@ var (
 	verbose  bool
 	logLevel string
 	jsonLog  bool
+	yesFlag  bool // Global --yes flag to skip all confirmations
 )
 
 var rootCmd = &cobra.Command{
@@ -26,6 +27,8 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// Initialize logger with flags
 		InitLogger(verbose, logLevel, jsonLog)
+		// Set global confirmation skip flag
+		skipConfirmations = yesFlag
 	},
 }
 
@@ -46,6 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose/debug logging")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "log level (debug, info, warn, error)")
 	rootCmd.PersistentFlags().BoolVar(&jsonLog, "json-log", false, "output logs in JSON format")
+	rootCmd.PersistentFlags().BoolVarP(&yesFlag, "yes", "y", false, "skip all confirmation prompts (use with caution)")
 
 	// Maintain backward compatibility with old flag names
 	rootCmd.PersistentFlags().StringVar(&clientSecret, "secret", clientSecret, "deprecated: use --client-secret instead")
