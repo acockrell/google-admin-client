@@ -253,8 +253,7 @@ make release            # Build for all platforms (goreleaser)
 
 3. **Run quality checks BEFORE staging changes**
    ```bash
-   make check    # MUST pass (formatting, linting, security)
-   make test     # MUST pass (all tests)
+   make check    # MUST pass (includes: fmt, vet, lint, security scan, and tests)
    ```
 
 4. **Stage and commit changes**
@@ -277,7 +276,7 @@ make release            # Build for all platforms (goreleaser)
 - ❌ NEVER commit directly to main
 - ❌ NEVER push to main
 - ✅ ALWAYS create a feature branch first
-- ✅ ALWAYS run `make check` and `make test` before `git add`
+- ✅ ALWAYS run `make check` before `git add` (includes all tests)
 - ✅ All changes merge to main via approved PRs only
 
 **Branch Naming Conventions:**
