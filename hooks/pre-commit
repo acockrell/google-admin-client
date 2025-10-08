@@ -1,0 +1,29 @@
+#!/bin/bash
+# Pre-commit hook for gac project
+
+set -e
+
+echo "Running pre-commit checks..."
+
+# Format code
+echo "→ Running go fmt..."
+go fmt ./...
+
+# Run go vet
+echo "→ Running go vet..."
+go vet ./...
+
+# Run linter
+echo "→ Running golangci-lint..."
+golangci-lint run ./...
+
+# Run go mod tidy
+echo "→ Running go mod tidy..."
+go mod tidy
+
+# Build to ensure no compilation errors
+echo "→ Building..."
+go build -o /tmp/gac-test
+rm -f /tmp/gac-test
+
+echo "✓ All pre-commit checks passed!"

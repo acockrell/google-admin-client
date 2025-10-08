@@ -623,7 +623,7 @@ Implementation details:
 
 **Status:** ✅ Complete
 - **Makefile**: Comprehensive build automation with targets for build, test, lint, fmt, clean, docker-build, etc.
-- **Pre-commit hooks**: Both `.pre-commit-config.yaml` for pre-commit framework and `.git/hooks/pre-commit` script that runs fmt, vet, tidy, and build
+- **Pre-commit hooks**: Both `.pre-commit-config.yaml` for pre-commit framework and `.git/hooks/pre-commit` script that runs fmt, vet, lint, tidy, and build
 - **Devcontainer**: VS Code devcontainer configuration with Go 1.25, extensions, and credential mounting
 - **DEBUGGING.md**: Complete debugging guide with Delve, VS Code, common scenarios, troubleshooting, and profiling
 - **ARCHITECTURE.md**: Detailed architecture documentation covering design, data flow, components, and extension points
