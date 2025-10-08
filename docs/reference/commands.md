@@ -7,8 +7,9 @@ Complete reference for all `gac` commands.
 | Command | Description |
 |---------|-------------|
 | `gac --help` | Show help for gac |
-| `gac version` | Show version information |
+| `gac version` | Show version information and build details |
 | `gac completion` | Generate shell completion scripts |
+| `gac config` | Configuration management commands |
 
 ## User Commands
 
@@ -81,6 +82,44 @@ See: [Organizational Units Guide](../guides/ou-management.md)
 
 See: [Alias Management Guide](../guides/alias-management.md)
 
+## Version Command
+
+| Command | Description |
+|---------|-------------|
+| `gac version` | Show version information |
+| `gac version --short` | Show version number only |
+
+The version command displays:
+- Version number (e.g., v0.5.0 or dev)
+- Git commit hash
+- Build date and time
+- Built by (make or goreleaser)
+- Go version
+- OS/Architecture
+
+## Config Commands
+
+| Command | Description |
+|---------|-------------|
+| `gac config validate` | Validate configuration and credentials |
+
+The config validate command checks:
+- Configuration file syntax (YAML)
+- Domain format and presence
+- Client secret file existence and permissions
+- Cache file path and permissions
+- OAuth2 token validity
+
+## Completion Commands
+
+| Command | Description |
+|---------|-------------|
+| `gac completion bash` | Generate bash completion script |
+| `gac completion zsh` | Generate zsh completion script |
+| `gac completion fish` | Generate fish completion script |
+
+See: [Shell Completion Guide](../guides/shell-completion.md)
+
 ## Audit Commands
 
 | Command | Description |
@@ -134,7 +173,13 @@ All commands support the following global flags:
 | `--domain <domain>` | Google Workspace domain |
 | `--client-secret <path>` | Path to OAuth2 client secret file |
 | `--cache-file <path>` | Path to token cache file |
+| `-y, --yes` | Skip all confirmation prompts (use with caution) |
+| `-v, --verbose` | Enable verbose/debug logging |
+| `--log-level <level>` | Set log level (debug, info, warn, error) |
+| `--json-log` | Output logs in JSON format |
 | `-h, --help` | Show help for command |
+
+**Note on `--yes` flag**: This flag skips all confirmation prompts for destructive operations. Use with extreme caution, especially in production environments. This is useful for automation and scripting where interactive prompts are not possible.
 
 ## Getting Detailed Help
 

@@ -18,6 +18,8 @@ A powerful command-line tool for managing Google Workspace users, groups, calend
 - **Organizational Units** - Manage organizational structure
 - **Alias Management** - Email aliases for users
 - **Audit Log Export** - Export audit logs for compliance and analysis
+- **Shell Completion** - Bash, zsh, and fish completion support
+- **Config Validation** - Validate configuration and credentials
 - **Secure Authentication** - OAuth2 with automatic token refresh
 - **Cross-Platform** - Linux and macOS (amd64 and arm64)
 
@@ -240,6 +242,30 @@ gac audit export --app admin --event-name USER_CREATED
 
 📖 **Full guide**: [Audit Logs](docs/guides/audit-logs.md)
 
+### CLI Utilities
+
+```bash
+# Show version information
+gac version
+
+# Show version number only
+gac version --short
+
+# Validate configuration
+gac config validate
+
+# Generate shell completion
+gac completion bash > /etc/bash_completion.d/gac  # Linux
+gac completion zsh > ~/.oh-my-zsh/completions/_gac  # zsh
+gac completion fish > ~/.config/fish/completions/gac.fish  # fish
+
+# Skip confirmations for automation (use with caution)
+gac user suspend user@example.com --yes
+gac ou delete /OldOU -y
+```
+
+📖 **Shell completion guide**: [Shell Completion](docs/guides/shell-completion.md)
+
 ## Documentation
 
 ### 📚 User Guides
@@ -251,6 +277,7 @@ gac audit export --app admin --event-name USER_CREATED
 - [Organizational Units](docs/guides/ou-management.md) - Manage organizational structure
 - [Alias Management](docs/guides/alias-management.md) - Email aliases for users
 - [Audit Logs](docs/guides/audit-logs.md) - Export audit logs for compliance and analysis
+- [Shell Completion](docs/guides/shell-completion.md) - Set up tab completion for your shell
 
 ### 📖 Reference
 - [Command Reference](docs/reference/commands.md) - Complete command list

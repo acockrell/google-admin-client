@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -82,30 +81,13 @@ func userSuspendRunFunc(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("invalid email format for %s: %w", userEmail, err)
 	}
 
-	// Show warning and prompt for confirmation unless --force is used
-	if !suspendForce {
-		fmt.Printf("WARNING: You are about to suspend user account: %s\n", userEmail)
-		fmt.Printf("\nThe user will:\n")
-		fmt.Printf("  - Be unable to sign in to their account\n")
-		fmt.Printf("  - Lose access to all Google Workspace services\n")
-		fmt.Printf("  - Not receive new emails (emails will bounce)\n")
-		if suspendReason != "" {
-			fmt.Printf("\nReason: %s\n", suspendReason)
-		}
-		fmt.Printf("\nType 'yes' to confirm suspension: ")
-
-		var confirmation string
-		_, err := fmt.Scanln(&confirmation)
-		if err != nil {
-			// If there's an error reading input (e.g., EOF), treat as cancellation
-			fmt.Fprintf(os.Stderr, "\nSuspension cancelled.\n")
-			return nil
-		}
-
-		if confirmation != "yes" {
-			fmt.Println("Suspension cancelled.")
-			return nil
-		}
+	// Show warning and prompt for confirmation unless --force or --yes is used
+	warningMsg := fmt.Sprintf("WARNING: You are about to suspend user account: %s\n\nThe user will:\n  - Be unable to sign in to their account\n  - Lose access to all Google Workspace services\n  - Not receive new emails (emails will bounce)", userEmail)
+	if suspendReason != "" {
+		warningMsg += fmt.Sprintf("\n\nReason: %s", suspendReason)
+	}
+	if !confirmAction(warningMsg, suspendForce) {
+		return nil
 	}
 
 	// Suspend the user

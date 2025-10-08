@@ -72,26 +72,10 @@ func aliasRemoveRunFunc(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Show warning and prompt for confirmation unless --force is used
-	if !aliasRemoveForce {
-		fmt.Printf("WARNING: You are about to remove alias:\n")
-		fmt.Printf("  User:  %s\n", userEmail)
-		fmt.Printf("  Alias: %s\n\n", aliasEmail)
-		fmt.Printf("After removal, email to this alias will no longer be delivered.\n\n")
-		fmt.Printf("Type 'yes' to confirm removal: ")
-
-		var confirmation string
-		_, err := fmt.Scanln(&confirmation)
-		if err != nil {
-			// If there's an error reading input (e.g., EOF), treat as cancellation
-			fmt.Fprintf(os.Stderr, "\nRemoval cancelled.\n")
-			return nil
-		}
-
-		if confirmation != "yes" {
-			fmt.Println("Removal cancelled.")
-			return nil
-		}
+	// Show warning and prompt for confirmation unless --force or --yes is used
+	message := fmt.Sprintf("WARNING: You are about to remove alias from user:\n  User:  %s\n  Alias: %s\n\nAfter removal, email to this alias will no longer be delivered.", userEmail, aliasEmail)
+	if !confirmAction(message, aliasRemoveForce) {
+		return nil
 	}
 
 	// Remove the alias

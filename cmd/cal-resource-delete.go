@@ -66,34 +66,22 @@ func calResourceDeleteRunFunc(cmd *cobra.Command, args []string) error {
 	resourceId := args[0]
 	customerID := "my_customer"
 
-	// Show warning and prompt for confirmation unless --force is used
-	if !calResourceDeleteForce {
-		// Get the resource details to show the user what they're deleting
+	// Show warning and prompt for confirmation unless --force or --yes is used
+	// Get the resource details to show the user what they're deleting
+	var additionalInfo string
+	if !calResourceDeleteForce && !skipConfirmations {
 		resource, err := client.Resources.Calendars.Get(customerID, resourceId).Do()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error retrieving calendar resource: %v\n", err)
 			return err
 		}
 
-		fmt.Printf("WARNING: You are about to delete calendar resource:\n")
-		fmt.Printf("  Name: %s\n", resource.ResourceName)
-		fmt.Printf("  Email: %s\n", resource.ResourceEmail)
-		fmt.Printf("  Type: %s\n", resource.ResourceType)
-		fmt.Printf("\nThis operation cannot be undone.\n\n")
-		fmt.Printf("Type 'yes' to confirm deletion: ")
+		additionalInfo = fmt.Sprintf("Name: %s\nEmail: %s\nType: %s",
+			resource.ResourceName, resource.ResourceEmail, resource.ResourceType)
+	}
 
-		var confirmation string
-		_, err = fmt.Scanln(&confirmation)
-		if err != nil {
-			// If there's an error reading input (e.g., EOF), treat as cancellation
-			fmt.Fprintf(os.Stderr, "\nDeletion cancelled.\n")
-			return nil
-		}
-
-		if confirmation != "yes" {
-			fmt.Println("Deletion cancelled.")
-			return nil
-		}
+	if !confirmDeletion("calendar resource", resourceId, additionalInfo, calResourceDeleteForce) {
+		return nil
 	}
 
 	// Delete the calendar resource

@@ -17,7 +17,10 @@ GOVET=$(GOCMD) vet
 # Build parameters
 BUILD_DIR=build
 VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-LDFLAGS=-ldflags "-X main.Version=$(VERSION)"
+COMMIT?=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
+DATE?=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+BUILT_BY?=make
+LDFLAGS=-ldflags "-s -w -X main.Version=$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(DATE) -X main.BuiltBy=$(BUILT_BY)"
 
 all: test build
 
