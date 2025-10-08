@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	admin "google.golang.org/api/admin/directory/v1"
@@ -21,6 +23,7 @@ import (
 // mockServer creates a test HTTP server that mocks Google API responses
 type mockServer struct {
 	*httptest.Server
+	mu       sync.Mutex
 	requests []*http.Request
 	handler  http.HandlerFunc
 }
@@ -33,8 +36,10 @@ func newMockServer(handler http.HandlerFunc) *mockServer {
 	}
 
 	ms.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Store request for verification
+		// Store request for verification (protected by mutex)
+		ms.mu.Lock()
 		ms.requests = append(ms.requests, r)
+		ms.mu.Unlock()
 		// Call the handler
 		if ms.handler != nil {
 			ms.handler(w, r)
@@ -46,6 +51,8 @@ func newMockServer(handler http.HandlerFunc) *mockServer {
 
 // getLastRequest returns the last request made to the mock server
 func (ms *mockServer) getLastRequest() *http.Request {
+	ms.mu.Lock()
+	defer ms.mu.Unlock()
 	if len(ms.requests) == 0 {
 		return nil
 	}
@@ -789,19 +796,19 @@ func TestErrorHandling_Integration(t *testing.T) {
 // TestConcurrentOperations_Integration tests concurrent API operations
 func TestConcurrentOperations_Integration(t *testing.T) {
 	t.Run("ConcurrentGroupListing", func(t *testing.T) {
-		// Track concurrent requests
-		requestCount := 0
+		// Track concurrent requests (using atomic for thread safety)
+		var requestCount int32
 
 		// Create mock server that responds to group listing
 		mockServer := newMockServer(func(w http.ResponseWriter, r *http.Request) {
-			requestCount++
+			count := atomic.AddInt32(&requestCount, 1)
 
 			// Return list of groups
 			groups := &admin.Groups{
 				Groups: []*admin.Group{
 					{
-						Email: fmt.Sprintf("group%d@example.com", requestCount),
-						Name:  fmt.Sprintf("Group %d", requestCount),
+						Email: fmt.Sprintf("group%d@example.com", count),
+						Name:  fmt.Sprintf("Group %d", count),
 					},
 				},
 			}
@@ -835,8 +842,9 @@ func TestConcurrentOperations_Integration(t *testing.T) {
 		}
 
 		// Verify all requests were made
-		if requestCount != 3 {
-			t.Errorf("Expected 3 requests, got %d", requestCount)
+		finalCount := atomic.LoadInt32(&requestCount)
+		if finalCount != 3 {
+			t.Errorf("Expected 3 requests, got %d", finalCount)
 		}
 	})
 }
