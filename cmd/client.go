@@ -18,6 +18,7 @@ import (
 	"golang.org/x/oauth2/google"
 	datatransfer "google.golang.org/api/admin/datatransfer/v1"
 	admin "google.golang.org/api/admin/directory/v1"
+	reports "google.golang.org/api/admin/reports/v1"
 	calendar "google.golang.org/api/calendar/v3"
 	groupssettings "google.golang.org/api/groupssettings/v1"
 	"google.golang.org/api/option"
@@ -41,6 +42,7 @@ var (
 		calendar.CalendarEventsReadonlyScope,
 		datatransfer.AdminDatatransferScope,
 		groupssettings.AppsGroupsSettingsScope,
+		reports.AdminReportsAuditReadonlyScope,
 	}
 )
 
@@ -184,6 +186,23 @@ func newGroupsSettingsClient() (*groupssettings.Service, error) {
 
 	LogDebug("Created groups settings client", map[string]interface{}{
 		"service": "groupssettings",
+	})
+	return srv, nil
+}
+
+func newReportsClient() (*reports.Service, error) {
+	client, err := newHTTPClient()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create HTTP client for reports service: %w", err)
+	}
+
+	srv, err := reports.NewService(context.Background(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create reports service: %w", err)
+	}
+
+	LogDebug("Created reports client", map[string]interface{}{
+		"service": "reports",
 	})
 	return srv, nil
 }
