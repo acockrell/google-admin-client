@@ -234,6 +234,58 @@ make lint               # Run golangci-lint
 make release            # Build for all platforms (goreleaser)
 ```
 
+### Git Workflow
+
+**IMPORTANT: The main branch is protected. All changes MUST be made via Pull Requests.**
+
+**Required workflow for ALL changes:**
+
+1. **Create feature branch FIRST (before any changes)**
+   ```bash
+   git checkout -b feat/feature-name     # For new features
+   git checkout -b fix/bug-name          # For bug fixes
+   git checkout -b chore/task-name       # For maintenance tasks
+   ```
+
+2. **Make your code changes**
+   - Write/edit files
+   - Add tests for new functionality
+
+3. **Run quality checks BEFORE staging changes**
+   ```bash
+   make check    # MUST pass (formatting, linting, security)
+   make test     # MUST pass (all tests)
+   ```
+
+4. **Stage and commit changes**
+   ```bash
+   git add <files>
+   git commit -m "type: descriptive message"
+   ```
+
+5. **Push branch to remote**
+   ```bash
+   git push -u origin <branch-name>
+   ```
+
+6. **Create Pull Request**
+   ```bash
+   gh pr create --title "..." --body "..."
+   ```
+
+**Key Rules:**
+- ❌ NEVER commit directly to main
+- ❌ NEVER push to main
+- ✅ ALWAYS create a feature branch first
+- ✅ ALWAYS run `make check` and `make test` before `git add`
+- ✅ All changes merge to main via approved PRs only
+
+**Branch Naming Conventions:**
+- `feat/` - New features or enhancements
+- `fix/` - Bug fixes
+- `chore/` - Maintenance, documentation, dependencies
+- `test/` - Test additions or improvements
+
 ### Running Tests
 
 ```bash
