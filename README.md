@@ -118,6 +118,36 @@ gac --domain example.com user list
 
 📖 **Full configuration guide**: [docs/configuration.md](docs/configuration.md)
 
+### Logging and Debugging
+
+Control log output for troubleshooting and monitoring:
+
+```bash
+# Enable verbose/debug logging
+gac --verbose user list
+gac -v user list
+
+# Set specific log level (debug, info, warn, error)
+gac --log-level debug user list
+
+# JSON log output for automation/parsing
+gac --json-log --log-level debug user list > debug.log
+
+# Combine with other flags
+gac -v --domain example.com user suspend user@example.com
+```
+
+**Log Levels:**
+- `debug` - Detailed API calls, requests, and responses
+- `info` - General operational messages (default)
+- `warn` - Warning messages (insecure permissions, deprecations)
+- `error` - Error messages only
+
+**Use Cases:**
+- **Troubleshooting** - Use `-v` or `--log-level debug` to see API calls and diagnose issues
+- **Automation** - Use `--json-log` for structured logs that can be parsed by log aggregators
+- **Production** - Use `--log-level warn` or `--log-level error` to reduce noise
+
 ## Common Tasks
 
 ### User Management

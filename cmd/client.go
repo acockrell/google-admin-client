@@ -106,11 +106,16 @@ func checkFilePermissions(filePath string) {
 
 	// Check if file is readable by group (permission bit 040) or world (permission bit 004)
 	if mode&0044 != 0 {
-		fmt.Fprintf(os.Stderr, "WARNING: Credential file %s has insecure permissions (%04o)\n", filePath, mode)
-		fmt.Fprintf(os.Stderr, "Recommendation: Run 'chmod 600 %s' to restrict access\n", filePath)
+		LogWarn("Credential file has insecure permissions", map[string]interface{}{
+			"file":        filePath,
+			"permissions": fmt.Sprintf("%04o", mode),
+			"action":      fmt.Sprintf("chmod 600 %s", filePath),
+		})
 
 		if mode&0004 != 0 {
-			fmt.Fprintf(os.Stderr, "CRITICAL: File is world-readable! This is a security risk.\n")
+			LogError(nil, "File is world-readable - security risk", map[string]interface{}{
+				"file": filePath,
+			})
 		}
 	}
 }
@@ -118,56 +123,68 @@ func checkFilePermissions(filePath string) {
 func newAdminClient() (*admin.Service, error) {
 	client, err := newHTTPClient()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create HTTP client for admin service: %w", err)
 	}
 
 	srv, err := admin.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create admin directory service: %w", err)
 	}
 
+	LogDebug("Created admin client", map[string]interface{}{
+		"service": "admin",
+	})
 	return srv, nil
 }
 
 func newCalendarClient() (*calendar.Service, error) {
 	client, err := newHTTPClient()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create HTTP client for calendar service: %w", err)
 	}
 
 	srv, err := calendar.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create calendar service: %w", err)
 	}
 
+	LogDebug("Created calendar client", map[string]interface{}{
+		"service": "calendar",
+	})
 	return srv, nil
 }
 
 func newDataTransferClient() (*datatransfer.Service, error) {
 	client, err := newHTTPClient()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create HTTP client for data transfer service: %w", err)
 	}
 
 	srv, err := datatransfer.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create data transfer service: %w", err)
 	}
 
+	LogDebug("Created data transfer client", map[string]interface{}{
+		"service": "datatransfer",
+	})
 	return srv, nil
 }
 
 func newGroupsSettingsClient() (*groupssettings.Service, error) {
 	client, err := newHTTPClient()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create HTTP client for groups settings service: %w", err)
 	}
 
 	srv, err := groupssettings.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create groups settings service: %w", err)
 	}
 
+	LogDebug("Created groups settings client", map[string]interface{}{
+		"service": "groupssettings",
+	})
 	return srv, nil
 }
 
@@ -182,7 +199,7 @@ func newHTTPClient() (*http.Client, error) {
 	if clientSecret == "" {
 		usr, err := user.Current()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get current user for default credentials path: %w", err)
 		}
 		clientSecret = filepath.Join(usr.HomeDir, ".credentials", "client_secret.json")
 	}
@@ -195,21 +212,25 @@ func newHTTPClient() (*http.Client, error) {
 	// Check file permissions and warn if insecure
 	checkFilePermissions(clientSecret)
 
+	LogDebug("Reading client secret", map[string]interface{}{
+		"path": clientSecret,
+	})
+
 	// #nosec G304 - Path is validated by validateCredentialPath() above
 	b, err := os.ReadFile(clientSecret)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read client secret file %s: %w", clientSecret, err)
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/admin-directory_v1-go-quickstart.json
 	config, err := google.ConfigFromJSON(b, scopes...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse client secret JSON: %w", err)
 	}
 	cacheFile, err := tokenCacheFile()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get token cache file path: %w", err)
 	}
 	tok, err := tokenFromFile(cacheFile)
 	if err != nil {
@@ -254,12 +275,12 @@ func tokenCacheFile() (string, error) {
 	if cacheFile == "" {
 		usr, err := user.Current()
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to get current user for default cache path: %w", err)
 		}
 		tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
 		err = os.MkdirAll(tokenCacheDir, 0700)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to create token cache directory %s: %w", tokenCacheDir, err)
 		}
 		return filepath.Join(tokenCacheDir,
 			url.QueryEscape("gac.json")), err

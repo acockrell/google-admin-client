@@ -231,15 +231,56 @@ Implementation details:
 </details>
 
 <details>
-<summary>📋 8. Error Handling</summary>
+<summary>✅ 8. Error Handling</summary>
 
-- [ ] Implement structured logging (zerolog or zap)
-- [ ] Add context to error messages
-- [ ] Use error wrapping with `fmt.Errorf` and `%w`
-- [ ] Add log levels (debug, info, warn, error)
-- [ ] Add `--verbose` flag for detailed logging
+- [x] Implement structured logging (zerolog or zap)
+- [x] Add context to error messages
+- [x] Use error wrapping with `fmt.Errorf` and `%w`
+- [x] Add log levels (debug, info, warn, error)
+- [x] Add `--verbose` flag for detailed logging
 
 **Rationale:** Better debugging and error tracking.
+
+**Status:** ✅ Complete
+Implementation details:
+- **Logging Library**: Selected and integrated `zerolog` for zero-allocation structured logging
+  - Added `github.com/rs/zerolog v1.34.0` dependency
+  - Supports both console (human-readable) and JSON output formats
+  - Zero allocation design improves performance
+- **Logger Infrastructure** (`cmd/logger.go`):
+  - Global `Logger` instance with configurable output format
+  - `InitLogger()` function called via root command's `PersistentPreRun`
+  - `parseLogLevel()` supports: debug, info, warn, error, fatal, panic, disabled
+  - Helper functions: `LogAPICall()`, `LogAPIResponse()`, `LogError()`, `LogWarn()`, `LogInfo()`, `LogDebug()`
+- **Command Flags** (`cmd/root.go`):
+  - `--verbose, -v` - Enable debug level logging
+  - `--log-level <level>` - Set specific log level (default: info)
+  - `--json-log` - Output logs in JSON format for automation
+- **Error Wrapping**: Implemented throughout codebase
+  - `cmd/client.go` - All client creation functions wrap errors with context
+  - `cmd/user-suspend.go` - Example of proper error wrapping and API logging
+  - Errors use `fmt.Errorf("context: %w", err)` pattern for error chains
+  - Debug logging added for API calls with timing metrics
+- **Structured Logging**:
+  - Replaced `fmt.Fprintf(os.Stderr)` with `Logger.Error()`, `Logger.Warn()`, etc.
+  - Added contextual fields (file paths, user emails, API parameters, durations)
+  - API calls logged with service, method, parameters, status code, and duration
+  - File permission warnings use structured logging with recommended actions
+- **Tests** (`cmd/logger_test.go`):
+  - 10 comprehensive tests covering all logging functions
+  - Tests for log level parsing, logger initialization, and output verification
+  - All 168 tests passing (10 new logging tests + 158 existing)
+- **Documentation**:
+  - README.md updated with "Logging and Debugging" section
+  - Examples for verbose mode, log levels, and JSON output
+  - Use cases for troubleshooting, automation, and production
+
+**Benefits:**
+- Better debugging with debug-level API call tracing
+- Structured logs for log aggregation tools (Splunk, ELK, etc.)
+- Context-rich error messages with full error chains
+- Performance-optimized zero-allocation logging
+- Consistent logging across all commands
 
 </details>
 

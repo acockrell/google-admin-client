@@ -10,8 +10,11 @@ import (
 
 // flags and parameters
 var (
-	cfgFile string
-	domain  string
+	cfgFile  string
+	domain   string
+	verbose  bool
+	logLevel string
+	jsonLog  bool
 )
 
 var rootCmd = &cobra.Command{
@@ -20,14 +23,17 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// Initialize logger with flags
+		InitLogger(verbose, logLevel, jsonLog)
+	},
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		Logger.Fatal().Err(err).Msg("Command execution failed")
 	}
 }
 
@@ -37,6 +43,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&clientSecret, "client-secret", clientSecret, "file containing client secret JSON")
 	rootCmd.PersistentFlags().StringVar(&cacheFile, "cache-file", cacheFile, "file containing oauth2 credential cache")
 	rootCmd.PersistentFlags().StringVar(&domain, "domain", "", "domain for email addresses (e.g., example.com)")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose/debug logging")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "log level (debug, info, warn, error)")
+	rootCmd.PersistentFlags().BoolVar(&jsonLog, "json-log", false, "output logs in JSON format")
 
 	// Maintain backward compatibility with old flag names
 	rootCmd.PersistentFlags().StringVar(&clientSecret, "secret", clientSecret, "deprecated: use --client-secret instead")
