@@ -385,6 +385,75 @@ gac group list --contains-former-employees
 - `-m, --get-members` - List group members
 - `-i, --contains-former-employees` - Show only groups with inactive members
 
+### Group Settings Management
+
+#### View Group Settings
+
+```bash
+# View group settings in table format
+gac group-settings list operations@example.com
+
+# View group settings as JSON
+gac group-settings list engineering --format json
+```
+
+**Flags:**
+- `-f, --format` - Output format: table or json (default: table)
+
+#### Update Group Settings
+
+```bash
+# Allow anyone in domain to join
+gac group-settings update operations@example.com \
+  --who-can-join ALL_IN_DOMAIN_CAN_JOIN
+
+# Configure posting permissions
+gac group-settings update engineering@example.com \
+  --who-can-post-message ALL_MEMBERS_CAN_POST \
+  --allow-web-posting true
+
+# Disable external members
+gac group-settings update sales@example.com \
+  --allow-external-members false
+
+# Add custom footer to group emails
+gac group-settings update support@example.com \
+  --custom-footer-text "For assistance, contact support@example.com" \
+  --include-custom-footer true
+
+# Enable message moderation
+gac group-settings update announcements@example.com \
+  --message-moderation-level MODERATE_ALL_MESSAGES \
+  --who-can-moderate-content ALL_MANAGERS_CAN_POST
+
+# Configure reply-to settings
+gac group-settings update team@example.com \
+  --reply-to REPLY_TO_SENDER
+
+# Make group archive-only (read-only)
+gac group-settings update archive@example.com \
+  --archive-only true
+```
+
+**Common Access Control Values:**
+- `whoCanJoin`: CAN_REQUEST_TO_JOIN, ALL_IN_DOMAIN_CAN_JOIN, ANYONE_CAN_JOIN, INVITED_CAN_JOIN
+- `whoCanViewGroup`: ANYONE_CAN_VIEW, ALL_IN_DOMAIN_CAN_VIEW, ALL_MEMBERS_CAN_VIEW, ALL_MANAGERS_CAN_VIEW
+- `whoCanPostMessage`: NONE_CAN_POST, ALL_MANAGERS_CAN_POST, ALL_MEMBERS_CAN_POST, ALL_IN_DOMAIN_CAN_POST, ANYONE_CAN_POST
+
+**Common Moderation Values:**
+- `messageModerationLevel`: MODERATE_ALL_MESSAGES, MODERATE_NON_MEMBERS, MODERATE_NEW_MEMBERS, MODERATE_NONE
+
+**Common Reply-To Values:**
+- `replyTo`: REPLY_TO_CUSTOM, REPLY_TO_SENDER, REPLY_TO_LIST, REPLY_TO_OWNER, REPLY_TO_IGNORE
+
+**Common use cases:**
+- Restricting group access to internal members only
+- Configuring who can post messages to prevent spam
+- Setting up moderated groups for announcements
+- Adding custom footers for compliance or branding
+- Creating read-only archive groups for historical records
+- Controlling member invitation and approval workflows
+
 ### Calendar Operations
 
 #### Create Calendar Event
@@ -726,6 +795,13 @@ gac transfer --from olduser@example.com --to newuser@example.com
 | Command | Description |
 |---------|-------------|
 | `gac group list [email]` | List groups or get details for specific group |
+
+### Group Settings Commands
+
+| Command | Description |
+|---------|-------------|
+| `gac group-settings list <group-email>` | View group settings |
+| `gac group-settings update <group-email>` | Update group settings |
 
 ### Calendar Commands
 
