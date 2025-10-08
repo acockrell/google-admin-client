@@ -390,10 +390,10 @@ Implementation details:
 - [x] Add organizational unit management
 - [x] Add alias management for users
 - [x] Add calendar resource management
-- [ ] Add group settings management
+- [x] Add group settings management
 - [ ] Add audit log export
 
-**Status:** 🚧 In Progress (4/6 features complete)
+**Status:** 🚧 In Progress (5/6 features complete)
 
 **Organizational Unit Management** - ✅ Complete
 Implementation details:
@@ -557,6 +557,58 @@ Implementation details:
   - Phone/audio equipment
   - Display screens
   - Custom feature tags
+
+**Group Settings Management** - ✅ Complete
+Implementation details:
+- **`gac group-settings list`**: View group settings
+  - Supports `--format` flag (table/json) for output format
+  - Displays all group configuration settings
+  - Shows access control, posting, email, archive, and moderation settings
+  - Table format for human reading, JSON for scripting
+- **`gac group-settings update`**: Update group settings
+  - Comprehensive flag support for all group settings
+  - Access control: who-can-join, who-can-view-group, allow-external-members
+  - Posting permissions: who-can-post-message, allow-web-posting, message-moderation-level
+  - Email settings: reply-to, custom-reply-to, custom-footer-text, include-custom-footer
+  - Archive settings: archive-only, show-in-group-directory
+  - Member management: who-can-add, who-can-invite, who-can-approve-members
+  - Moderation: who-can-moderate-members, who-can-moderate-content, who-can-ban-users
+  - Supports partial updates (only specified fields changed)
+  - Uses ForceSendFields to ensure boolean values are sent correctly
+- **Tests**: Added comprehensive test suite in `cmd/group-settings_test.go`
+  - Tests for command existence and structure
+  - Validates all 26+ flags are present in update command
+  - Tests command registration with root
+  - All tests passing
+- **Documentation**:
+  - README.md updated with group settings management section
+  - Detailed examples for common configuration scenarios
+  - List of all available settings and their values
+  - examples/group-settings-management.sh demo script
+  - examples/README.md updated with Section 11
+- **OAuth Scopes Added**:
+  - Added `groupssettings.AppsGroupsSettingsScope` to client.go
+  - Created `newGroupsSettingsClient()` function
+- **Files Created**:
+  - `cmd/group-settings.go` - Root group-settings command
+  - `cmd/group-settings-list.go` - View group settings
+  - `cmd/group-settings-update.go` - Update group settings
+  - `cmd/group-settings_test.go` - Test suite
+  - `examples/group-settings-management.sh` - Demo script
+- **Common Use Cases**:
+  - Restricting group access to internal members only
+  - Configuring posting permissions to prevent spam
+  - Setting up moderated announcement groups
+  - Adding custom footers for compliance/branding
+  - Creating read-only archive groups
+  - Managing external partner collaboration groups
+- **Key Features**:
+  - 26+ configurable settings covering all aspects of group behavior
+  - Support for access control (join, view, membership)
+  - Posting and moderation controls
+  - Email customization (footers, reply-to)
+  - Archive and directory visibility
+  - Member invitation and approval workflows
 
 </details>
 

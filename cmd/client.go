@@ -19,6 +19,7 @@ import (
 	datatransfer "google.golang.org/api/admin/datatransfer/v1"
 	admin "google.golang.org/api/admin/directory/v1"
 	calendar "google.golang.org/api/calendar/v3"
+	groupssettings "google.golang.org/api/groupssettings/v1"
 	"google.golang.org/api/option"
 )
 
@@ -39,6 +40,7 @@ var (
 		calendar.CalendarEventsScope,
 		calendar.CalendarEventsReadonlyScope,
 		datatransfer.AdminDatatransferScope,
+		groupssettings.AppsGroupsSettingsScope,
 	}
 )
 
@@ -148,6 +150,20 @@ func newDataTransferClient() (*datatransfer.Service, error) {
 	}
 
 	srv, err := datatransfer.NewService(context.Background(), option.WithHTTPClient(client))
+	if err != nil {
+		return nil, err
+	}
+
+	return srv, nil
+}
+
+func newGroupsSettingsClient() (*groupssettings.Service, error) {
+	client, err := newHTTPClient()
+	if err != nil {
+		return nil, err
+	}
+
+	srv, err := groupssettings.NewService(context.Background(), option.WithHTTPClient(client))
 	if err != nil {
 		return nil, err
 	}

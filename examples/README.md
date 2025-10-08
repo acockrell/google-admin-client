@@ -666,6 +666,127 @@ export BUILDING_ID=main-bldg
 - Regularly audit and remove unused resources
 - Document resource policies (e.g., booking limits, approval requirements)
 
+## 11. Group Settings Management
+
+Manage Google Workspace group settings including access control, posting permissions, moderation, and email preferences.
+
+**File**: [`group-settings-management.sh`](group-settings-management.sh)
+
+**What it demonstrates**:
+- Viewing group settings in table and JSON formats
+- Configuring access control (who can join/view)
+- Setting posting permissions
+- Enabling message moderation
+- Adding custom email footers
+- Managing reply-to and archive settings
+
+**Key commands**:
+```bash
+# View group settings
+gac group-settings list team@example.com
+
+# View settings as JSON
+gac group-settings list team@example.com --format json
+
+# Allow anyone in domain to join
+gac group-settings update team@example.com \
+  --who-can-join ALL_IN_DOMAIN_CAN_JOIN
+
+# Configure posting permissions
+gac group-settings update engineering@example.com \
+  --who-can-post-message ALL_MEMBERS_CAN_POST \
+  --allow-web-posting true
+
+# Enable moderation for announcements
+gac group-settings update announcements@example.com \
+  --message-moderation-level MODERATE_ALL_MESSAGES \
+  --who-can-moderate-content ALL_MANAGERS_CAN_POST
+
+# Add custom footer
+gac group-settings update support@example.com \
+  --custom-footer-text "For help, contact support@example.com" \
+  --include-custom-footer true
+
+# Make group read-only archive
+gac group-settings update archive@example.com \
+  --archive-only true
+```
+
+**Usage**:
+```bash
+# Optionally set group emails
+export GROUP_EMAIL=team@example.com
+export ANNOUNCEMENTS_GROUP=announcements@example.com
+export SUPPORT_GROUP=support@example.com
+
+./examples/group-settings-management.sh
+```
+
+**Common Configuration Scenarios**:
+
+1. **Team Collaboration Group**:
+   ```bash
+   gac group-settings update team@example.com \
+     --who-can-join ALL_IN_DOMAIN_CAN_JOIN \
+     --who-can-post-message ALL_MEMBERS_CAN_POST \
+     --allow-web-posting true \
+     --reply-to REPLY_TO_SENDER
+   ```
+
+2. **Moderated Announcements**:
+   ```bash
+   gac group-settings update announcements@example.com \
+     --who-can-post-message ALL_MANAGERS_CAN_POST \
+     --message-moderation-level MODERATE_ALL_MESSAGES \
+     --who-can-view-group ALL_IN_DOMAIN_CAN_VIEW \
+     --allow-external-members false
+   ```
+
+3. **External Partner Group**:
+   ```bash
+   gac group-settings update partners@example.com \
+     --allow-external-members true \
+     --who-can-join INVITED_CAN_JOIN \
+     --who-can-post-message ALL_MEMBERS_CAN_POST \
+     --message-moderation-level MODERATE_NON_MEMBERS
+   ```
+
+4. **Read-Only Archive**:
+   ```bash
+   gac group-settings update archive-2024@example.com \
+     --archive-only true \
+     --who-can-view-group ALL_IN_DOMAIN_CAN_VIEW \
+     --who-can-post-message NONE_CAN_POST
+   ```
+
+**Available Settings**:
+
+- **Access Control**: `who-can-join`, `who-can-view-group`, `who-can-view-membership`, `allow-external-members`
+- **Posting**: `who-can-post-message`, `allow-web-posting`, `message-moderation-level`, `spam-moderation-level`
+- **Email**: `reply-to`, `custom-reply-to`, `custom-footer-text`, `include-custom-footer`, `include-in-global-address-list`
+- **Archive**: `archive-only`, `show-in-group-directory`
+- **Members**: `who-can-leave-group`, `who-can-add`, `who-can-invite`, `who-can-approve-members`, `members-can-post-as-the-group`
+- **Moderation**: `who-can-contact-owner`, `who-can-moderate-members`, `who-can-moderate-content`, `who-can-ban-users`
+
+**Key Points**:
+- Only update settings you want to change; others remain unchanged
+- Settings use specific values (e.g., `ALL_IN_DOMAIN_CAN_JOIN`, `ALL_MEMBERS_CAN_POST`)
+- Custom footers can include up to 1,000 characters
+- Archive-only groups reject new messages
+- Moderation levels: `MODERATE_ALL_MESSAGES`, `MODERATE_NON_MEMBERS`, `MODERATE_NEW_MEMBERS`, `MODERATE_NONE`
+
+**Best Practices**:
+- Document group purposes and settings in group descriptions
+- Use moderation for announcement-only groups
+- Restrict external members for sensitive groups
+- Add custom footers for support/compliance information
+- Set appropriate join permissions based on group sensitivity
+- Use `archive-only` for historical groups instead of deleting
+- Test settings with a pilot group before applying to all groups
+- Review group settings regularly for security compliance
+- Use reply-to settings to control conversation flow
+- Enable spam moderation for public-facing groups
+
 ## Best Practices
 
 ### Security
