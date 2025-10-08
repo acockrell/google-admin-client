@@ -164,6 +164,12 @@ func writeJSONOutput(activities []*reports.Activity, filename string) error {
 	if filename == "" {
 		output = os.Stdout
 	} else {
+		// Validate output file path to prevent directory traversal
+		if err := validateCredentialPath(filename); err != nil {
+			return fmt.Errorf("invalid output file path: %w", err)
+		}
+
+		// #nosec G304 - Path is validated by validateCredentialPath() above
 		output, err = os.Create(filename)
 		if err != nil {
 			return fmt.Errorf("failed to create output file: %w", err)
@@ -193,6 +199,12 @@ func writeCSVOutput(activities []*reports.Activity, filename string) error {
 	if filename == "" {
 		output = os.Stdout
 	} else {
+		// Validate output file path to prevent directory traversal
+		if err := validateCredentialPath(filename); err != nil {
+			return fmt.Errorf("invalid output file path: %w", err)
+		}
+
+		// #nosec G304 - Path is validated by validateCredentialPath() above
 		output, err = os.Create(filename)
 		if err != nil {
 			return fmt.Errorf("failed to create output file: %w", err)
