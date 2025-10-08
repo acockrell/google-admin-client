@@ -425,16 +425,16 @@ Implementation details:
 ## Nice to Have
 
 <details>
-<summary>🚧 15. Additional Features</summary>
+<summary>✅ 15. Additional Features</summary>
 
 - [x] Add user suspension/unsuspension commands
 - [x] Add organizational unit management
 - [x] Add alias management for users
 - [x] Add calendar resource management
 - [x] Add group settings management
-- [ ] Add audit log export
+- [x] Add audit log export
 
-**Status:** 🚧 In Progress (5/6 features complete)
+**Status:** ✅ Complete (6/6 features complete)
 
 **Organizational Unit Management** - ✅ Complete
 Implementation details:
@@ -650,6 +650,60 @@ Implementation details:
   - Email customization (footers, reply-to)
   - Archive and directory visibility
   - Member invitation and approval workflows
+
+**Audit Log Export** - ✅ Complete
+Implementation details:
+- **`gac audit export`**: Export audit logs for Google Workspace applications
+  - Supports 13 application types: admin, login, drive, calendar, groups, mobile, token, groups_enterprise, saml, chrome, gcp, chat, meet
+  - Default time range: last 24 hours (configurable via `--start-time` and `--end-time`)
+  - RFC3339 time format support (e.g., `2024-10-08T00:00:00Z`)
+  - Automatic pagination for large result sets
+  - Structured logging with progress tracking
+- **Filtering Options**:
+  - `--user <email>`: Filter by user email address
+  - `--event-name <event>`: Filter by event name (supports multiple)
+  - `--actor-ip <ip>`: Filter by actor IP address
+  - `--max-results <n>`: Limit number of results
+- **Output Formats**:
+  - JSON (default): Full event details with complete metadata
+  - CSV: Tabular format with key fields (timestamp, actor, event, IP, application)
+  - `--output-file` flag to save to file instead of stdout
+- **Tests**: Added comprehensive test suite in `cmd/audit_test.go`
+  - Tests for time range parsing with defaults
+  - Validation of application types
+  - Command registration verification
+  - All tests passing
+- **Documentation**:
+  - README.md updated with audit examples section
+  - docs/guides/audit-logs.md: Complete guide with use cases and best practices
+  - docs/reference/commands.md: Command reference with all flags and app types
+  - Security monitoring examples
+  - Compliance and auditing workflows
+  - File access monitoring scenarios
+  - Automated daily report scripts
+- **OAuth Scopes Added**:
+  - Added `reports.AdminReportsAuditReadonlyScope` to client.go
+  - Created `newReportsClient()` function
+- **Files Created**:
+  - `cmd/audit.go` - Root audit command
+  - `cmd/audit-export.go` - Export functionality (~400 lines)
+  - `cmd/audit_test.go` - Test suite
+  - `docs/guides/audit-logs.md` - Complete guide (~400 lines)
+- **Common Use Cases**:
+  - Security monitoring and threat detection
+  - Compliance auditing and reporting
+  - User activity tracking
+  - File access monitoring
+  - Admin action auditing
+  - Automated daily/weekly reports
+- **Key Features**:
+  - Comprehensive event coverage across all Google Workspace apps
+  - Flexible time range filtering (custom or default 24h)
+  - Multiple output formats (JSON/CSV) for different use cases
+  - Pagination support for large datasets
+  - Structured logging for debugging
+  - Complete event metadata preservation
+  - Filter by user, event type, or IP address
 
 </details>
 
