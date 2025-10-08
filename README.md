@@ -17,6 +17,7 @@ A powerful command-line tool for managing Google Workspace users, groups, calend
 - **Calendar Resources** - Manage bookable resources (rooms, equipment)
 - **Organizational Units** - Manage organizational structure
 - **Alias Management** - Email aliases for users
+- **Audit Log Export** - Export audit logs for compliance and analysis
 - **Secure Authentication** - OAuth2 with automatic token refresh
 - **Cross-Platform** - Linux and macOS (amd64 and arm64)
 
@@ -218,6 +219,27 @@ gac user update --ou /Engineering/Backend user@example.com
 
 📖 **Full guide**: [Organizational Units](docs/guides/ou-management.md)
 
+### Audit Log Export
+
+```bash
+# Export last 24h of admin console activities
+gac audit export --app admin
+
+# Export login activities for specific user
+gac audit export --app login --user user@example.com
+
+# Export drive activities to CSV
+gac audit export --app drive \
+  --start-time 2024-10-01T00:00:00Z \
+  --end-time 2024-10-08T00:00:00Z \
+  --output csv --output-file drive-audit.csv
+
+# Filter by event types
+gac audit export --app admin --event-name USER_CREATED
+```
+
+📖 **Full guide**: [Audit Logs](docs/guides/audit-logs.md)
+
 ## Documentation
 
 ### 📚 User Guides
@@ -228,6 +250,7 @@ gac user update --ou /Engineering/Backend user@example.com
 - [Calendar Resources](docs/guides/calendar-resources.md) - Manage rooms and equipment
 - [Organizational Units](docs/guides/ou-management.md) - Manage organizational structure
 - [Alias Management](docs/guides/alias-management.md) - Email aliases for users
+- [Audit Logs](docs/guides/audit-logs.md) - Export audit logs for compliance and analysis
 
 ### 📖 Reference
 - [Command Reference](docs/reference/commands.md) - Complete command list
@@ -259,6 +282,7 @@ gac user update --ou /Engineering/Backend user@example.com
 | **Calendar Resources** | `list`, `create`, `update`, `delete` |
 | **Organizational Units** | `list`, `create`, `update`, `delete` |
 | **Aliases** | `list`, `add`, `remove` |
+| **Audit** | `export` |
 | **Data Transfer** | `transfer` |
 
 📖 **Full command reference**: [docs/reference/commands.md](docs/reference/commands.md)

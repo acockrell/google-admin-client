@@ -81,6 +81,44 @@ See: [Organizational Units Guide](../guides/ou-management.md)
 
 See: [Alias Management Guide](../guides/alias-management.md)
 
+## Audit Commands
+
+| Command | Description |
+|---------|-------------|
+| `gac audit export` | Export audit logs for a specific application |
+
+### Audit Export Flags
+
+| Flag | Description |
+|------|-------------|
+| `--app <application>` | Application type (required: admin, login, drive, calendar, groups, etc.) |
+| `--start-time <time>` | Start time in RFC3339 format (default: 24 hours ago) |
+| `--end-time <time>` | End time in RFC3339 format (default: now) |
+| `--user <email>` | Filter by user email address |
+| `--event-name <event>` | Filter by event name (can specify multiple) |
+| `--actor-ip <ip>` | Filter by actor IP address |
+| `-o, --output <format>` | Output format (json, csv) (default: json) |
+| `-f, --output-file <path>` | Output file path (default: stdout) |
+| `--max-results <number>` | Maximum number of results to return |
+
+### Supported Application Types
+
+- `admin` - Admin console activities
+- `login` - User login/logout activities
+- `drive` - Google Drive operations
+- `calendar` - Calendar activities
+- `groups` - Google Groups operations
+- `mobile` - Mobile device activities
+- `token` - OAuth token activities
+- `groups_enterprise` - Groups for Enterprise
+- `saml` - SAML authentication
+- `chrome` - Chrome browser management
+- `gcp` - Google Cloud Platform
+- `chat` - Google Chat
+- `meet` - Google Meet
+
+See: [Audit Logs Guide](../guides/audit-logs.md)
+
 ## Transfer Commands
 
 | Command | Description |
