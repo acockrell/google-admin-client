@@ -12,6 +12,10 @@
 - Google Admin SDK (Directory, Calendar, Groups Settings, Data Transfer APIs)
 - OAuth2 for authentication
 
+> **📘 Go-Specific Coding Standards**
+> For comprehensive Go coding rules and best practices, see [claude-golang.md](./claude-golang.md).
+> These rules cover error handling, concurrency, testing patterns, security, and more—and take precedence for all Go code in this project.
+
 ## Quick Architecture
 
 ```
