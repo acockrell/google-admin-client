@@ -99,7 +99,10 @@ func displayGroupSettings(settings interface{}) {
 	if !ok {
 		// If not a map, try to marshal and unmarshal to get a map
 		bytes, _ := json.Marshal(settings)
-		json.Unmarshal(bytes, &settingsMap)
+		if err := json.Unmarshal(bytes, &settingsMap); err != nil {
+			fmt.Fprintf(os.Stderr, "Error converting settings to map: %v\n", err)
+			return
+		}
 	}
 
 	fmt.Printf("Group Settings\n")
