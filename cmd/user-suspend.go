@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	admin "google.golang.org/api/admin/directory/v1"
@@ -71,16 +72,14 @@ func init() {
 func userSuspendRunFunc(cmd *cobra.Command, args []string) error {
 	client, err := newAdminClient()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating client: %v\n", err)
-		return err
+		return fmt.Errorf("failed to create admin client: %w", err)
 	}
 
 	userEmail := args[0]
 
 	// Validate email format
 	if err := ValidateEmail(userEmail); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: Invalid email format: %v\n", err)
-		return err
+		return fmt.Errorf("invalid email format for %s: %w", userEmail, err)
 	}
 
 	// Show warning and prompt for confirmation unless --force is used
@@ -122,16 +121,26 @@ func userSuspendRunFunc(cmd *cobra.Command, args []string) error {
 	// Force send the Suspended field
 	user.ForceSendFields = []string{"Suspended"}
 
+	// Log API call
+	LogAPICall("admin", "Users.Update", map[string]interface{}{
+		"user_email": userEmail,
+		"suspended":  true,
+		"reason":     suspendReason,
+	})
+
+	startTime := time.Now()
 	result, err := client.Users.Update(userEmail, user).Do()
+	duration := time.Since(startTime)
+
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error suspending user: %v\n", err)
-		fmt.Fprintf(os.Stderr, "\nCommon reasons for failure:\n")
-		fmt.Fprintf(os.Stderr, "  - User does not exist\n")
-		fmt.Fprintf(os.Stderr, "  - Insufficient permissions\n")
-		fmt.Fprintf(os.Stderr, "  - User is already suspended\n")
-		fmt.Fprintf(os.Stderr, "  - Super admin accounts may have restrictions\n")
-		return err
+		LogError(err, "Failed to suspend user", map[string]interface{}{
+			"user_email": userEmail,
+			"duration":   duration,
+		})
+		return fmt.Errorf("failed to suspend user %s: %w (check: user exists, permissions, already suspended)", userEmail, err)
 	}
+
+	LogAPIResponse("admin", "Users.Update", 200, duration)
 
 	fmt.Printf("Successfully suspended user account:\n\n")
 	fmt.Printf("  Email: %s\n", result.PrimaryEmail)
