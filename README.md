@@ -1,61 +1,39 @@
 # gac - Google Admin Client
 
-A command-line tool for managing Google Workspace (formerly Google Apps) users, groups, calendars, and data transfers.
+A powerful command-line tool for managing Google Workspace users, groups, calendars, and resources.
 
 [![Go Version](https://img.shields.io/badge/Go-1.25%2B-blue.svg)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Usage](#usage)
-  - [User Management](#user-management)
-  - [Group Management](#group-management)
-  - [Calendar Operations](#calendar-operations)
-  - [Calendar Resource Management](#calendar-resource-management)
-  - [Organizational Unit Management](#organizational-unit-management)
-  - [Data Transfers](#data-transfers)
-- [Command Reference](#command-reference)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [Architecture](#architecture)
-- [License](#license)
-
 ## Overview
 
-**gac** (Google Admin Client) is a powerful CLI tool for automating Google Workspace administrative tasks. Built with Go and the Cobra framework, it provides a simple interface for managing users, groups, calendars, and data transfers through the Google Admin SDK APIs.
+**gac** (Google Admin Client) is a CLI tool for automating Google Workspace administrative tasks. Built with Go, it provides a simple interface for managing users, groups, calendars, and more through the Google Admin SDK APIs.
 
 ### Key Features
 
-- **User Management**: Create, list, and update users with comprehensive profile support
-- **Group Management**: List groups and manage memberships
-- **Calendar Operations**: Create, list, and update calendar events
-- **Calendar Resource Management**: Manage bookable calendar resources like conference rooms and equipment
-- **Data Transfers**: Transfer ownership of documents and resources between users
-- **Secure Authentication**: OAuth2 authentication with automatic token refresh
-- **Flexible Configuration**: Support for config files, environment variables, and CLI flags
-- **Input Validation**: Comprehensive validation of emails, phone numbers, UUIDs, and other inputs
-- **Cross-Platform**: Builds for Linux and macOS (amd64 and arm64)
+- **User Management** - Create, list, update, suspend users
+- **Group Management** - Manage groups, memberships, and settings
+- **Calendar Operations** - Create and manage calendar events
+- **Calendar Resources** - Manage bookable resources (rooms, equipment)
+- **Organizational Units** - Manage organizational structure
+- **Alias Management** - Email aliases for users
+- **Secure Authentication** - OAuth2 with automatic token refresh
+- **Cross-Platform** - Linux and macOS (amd64 and arm64)
 
-## Installation
+## Quick Start
 
-### Pre-built Binaries
-
-Download the latest release for your platform from the [releases page](https://github.com/acockrell/google-admin-client/releases):
+### Installation
 
 ```bash
+# macOS (Homebrew - coming soon)
+# brew install acockrell/tap/gac
+
+# Pre-built binaries
+# Download from: https://github.com/acockrell/google-admin-client/releases
+
 # macOS (Apple Silicon)
 curl -LO https://github.com/acockrell/google-admin-client/releases/latest/download/gac_darwin_arm64.tar.gz
 tar xzf gac_darwin_arm64.tar.gz
-sudo mv gac /usr/local/bin/
-
-# macOS (Intel)
-curl -LO https://github.com/acockrell/google-admin-client/releases/latest/download/gac_darwin_amd64.tar.gz
-tar xzf gac_darwin_amd64.tar.gz
 sudo mv gac /usr/local/bin/
 
 # Linux (amd64)
@@ -63,106 +41,63 @@ curl -LO https://github.com/acockrell/google-admin-client/releases/latest/downlo
 tar xzf gac_linux_amd64.tar.gz
 sudo mv gac /usr/local/bin/
 
-# Linux (arm64)
-curl -LO https://github.com/acockrell/google-admin-client/releases/latest/download/gac_linux_arm64.tar.gz
-tar xzf gac_linux_arm64.tar.gz
-sudo mv gac /usr/local/bin/
-```
-
-### Build from Source
-
-Requirements:
-- Go 1.25 or later
-- Git
-
-```bash
+# Build from source
 git clone https://github.com/acockrell/google-admin-client.git
 cd google-admin-client
 make build
 sudo mv build/gac /usr/local/bin/
 ```
 
-### Docker
+### Authentication
 
-```bash
-docker pull ghcr.io/acockrell/google-admin-client:latest
-docker run --rm -it ghcr.io/acockrell/google-admin-client:latest --help
-```
+1. **Set up OAuth2 credentials** in [Google Cloud Console](https://console.cloud.google.com)
+   - Create a project
+   - Enable Admin SDK API and Calendar API
+   - Create OAuth2 credentials (Desktop app)
+   - Download the JSON file
 
-### Verify Installation
+2. **Configure credentials**:
+   ```bash
+   mkdir -p ~/.credentials
+   mv ~/Downloads/client_secret_*.json ~/.credentials/client_secret.json
+   chmod 600 ~/.credentials/client_secret.json
+   ```
 
-```bash
-gac --help
-```
+3. **Authenticate**:
+   ```bash
+   gac user list
+   # Follow the browser prompts to grant permissions
+   ```
 
-## Quick Start
+📖 **Detailed setup**: See [Authentication Guide](docs/authentication.md)
 
-### 1. Set Up Google Cloud Credentials
-
-Before using `gac`, you need to set up OAuth2 credentials:
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create or select a project
-3. Enable the Admin SDK API and Google Calendar API
-4. Create OAuth2 credentials (Desktop app type)
-5. Download the JSON credentials file
-
-See [CREDENTIALS.md](CREDENTIALS.md) for detailed setup instructions.
-
-### 2. Configure Credentials
-
-Place your credentials in the default location:
-
-```bash
-mkdir -p ~/.credentials
-mv ~/Downloads/client_secret_*.json ~/.credentials/client_secret.json
-chmod 600 ~/.credentials/client_secret.json
-```
-
-### 3. Authenticate
-
-Run any command to trigger the OAuth2 authentication flow:
-
-```bash
-gac user list
-```
-
-Follow the browser prompts to authenticate and grant permissions. Your token will be saved to `~/.credentials/gac.json`.
-
-### 4. Run Commands
+### Basic Usage
 
 ```bash
 # List all users
 gac user list
 
 # Create a new user
-gac user create newuser@example.com
+gac user create john.doe@example.com
 
-# Update user information
-gac user update --dept Engineering --title "Software Engineer" jdoe@example.com
+# Update user department
+gac user update --dept Engineering john.doe@example.com
 
-# List groups
-gac group list
+# View group settings
+gac group-settings list team@example.com
+
+# List calendar resources
+gac cal-resource list --type room
 ```
 
 ## Configuration
 
-`gac` supports multiple configuration methods with the following priority (highest to lowest):
+Configure `gac` via config file, environment variables, or CLI flags:
 
-1. **Command-line flags** (highest priority)
-2. **Environment variables**
-3. **Configuration file**
-4. **Default values** (lowest priority)
-
-### Configuration File
-
-Create `~/.google-admin.yaml` with your settings:
+### Config File (~/.google-admin.yaml)
 
 ```yaml
-# Google Workspace domain
 domain: example.com
-
-# OAuth2 credential paths
 client-secret: /path/to/client_secret.json
 cache-file: /path/to/token.json
 ```
@@ -170,790 +105,166 @@ cache-file: /path/to/token.json
 ### Environment Variables
 
 ```bash
-# Primary environment variables
 export GAC_DOMAIN=example.com
-export GAC_CLIENT_SECRET=/path/to/client_secret.json
-export GAC_CACHE_FILE=/path/to/token.json
-
-# Alternate environment variables (also supported)
-export GOOGLE_ADMIN_DOMAIN=example.com
-export GOOGLE_ADMIN_CLIENT_SECRET=/path/to/client_secret.json
-export GOOGLE_ADMIN_CACHE_FILE=/path/to/token.json
+export GAC_CLIENT_SECRET=~/.credentials/client_secret.json
+export GAC_CACHE_FILE=~/.credentials/gac.json
 ```
 
-### Global Flags
+### CLI Flags
 
-All commands support these global flags:
+```bash
+gac --domain example.com user list
+```
 
-- `--domain string` - Domain for email addresses (e.g., example.com)
-- `--client-secret string` - Path to OAuth2 client secret JSON file
-- `--cache-file string` - Path to OAuth2 token cache file
-- `--config string` - Path to config file (default: `$HOME/.google-admin.yaml`)
+📖 **Full configuration guide**: [docs/configuration.md](docs/configuration.md)
 
-### Examples
-
-See the [examples/](examples/) directory for sample configuration files and use cases.
-
-## Usage
+## Common Tasks
 
 ### User Management
 
-#### Create a User
-
 ```bash
-# Interactive creation (prompts for details)
-gac user create newuser@example.com
-
-# With optional details
+# Create user with groups
 gac user create \
-  -f John \
-  -l Doe \
-  -e personal@email.com \
-  -g engineering \
-  -g all-staff \
-  newuser@example.com
-```
+  --first-name John \
+  --last-name Doe \
+  --groups engineering \
+  --groups all-staff \
+  john.doe@example.com
 
-**Flags:**
-- `-f, --first-name` - First name
-- `-l, --last-name` - Last name
-- `-e, --email` - Personal email address
-- `-g, --groups` - Groups to add user to (can be repeated)
-
-#### List Users
-
-```bash
-# List all active users
-gac user list
-
-# List a specific user
-gac user list jdoe@example.com
-
-# List only disabled accounts
-gac user list --disabled-only
-
-# Export to CSV
-gac user list --csv > users.csv
-
-# Full export with all fields
-gac user list --full
-```
-
-**Flags:**
-- `-c, --csv` - Export as CSV
-- `-d, --disabled-only` - Show only disabled accounts
-- `-f, --full` - Include all user fields
-
-#### Update a User
-
-```bash
-# Update department and title
-gac user update --dept Engineering --title "Senior Engineer" jdoe@example.com
-
-# Add user to groups
-gac user update -g developers -g team-leads jdoe@example.com
-
-# Update phone numbers
-gac user update --phone "mobile:555-555-5555" jdoe@example.com
-gac user update --phone "mobile:555-555-5555; work:555-123-4567,555" jdoe@example.com
-
-# Update address
-gac user update --address "Columbus, OH" jdoe@example.com
-
-# Set manager
-gac user update --manager manager@example.com jdoe@example.com
-
-# Update employee type
-gac user update --type staff jdoe@example.com
-
-# Set employee ID (UUID)
-gac user update --id $(uuidgen) jdoe@example.com
-gac user update --id $(uuidgen) --force jdoe@example.com
-
-# Update organizational unit
-gac user update --ou /Engineering/Backend jdoe@example.com
-
-# Update custom fields
-gac user update --github-profile doeMaker jdoe@example.com
-gac user update --amazon-username john.doe jdoe@example.com
-gac user update --vpn-role developer jdoe@example.com
-
-# Disable user account
-gac user update --remove jdoe@example.com
-
-# Clear personal information
-gac user update --clear-pii jdoe@example.com
-```
-
-**Flags:**
-- `-t, --title` - Job title
-- `-d, --dept` - Department
-- `-e, --type` - Employee type (staff or contractor)
-- `-g, --group` - Groups to add user to (can be repeated)
-- `-m, --manager` - Manager's email address
-- `-p, --phone` - Phone number(s) in format "type:number" or "type:number; type:number,ext"
-- `-a, --address` - Work address
-- `-o, --ou` - Organizational unit path
-- `-i, --id` - Employee UUID
-- `-f, --force` - Overwrite existing values (e.g., employee ID)
-- `--github-profile` - GitHub username
-- `--amazon-username` - Amazon username
-- `--vpn-role` - VPN access role
-- `-r, --remove` - Disable user account
-- `--clear-pii` - Clear personal information
-
-#### Suspend User Account
-
-```bash
-# Suspend a user with confirmation
-gac user suspend user@example.com
-
-# Suspend with a reason
+# Suspend user
 gac user suspend user@example.com --reason "Left company"
 
-# Suspend without confirmation
-gac user suspend user@example.com --force
-```
-
-**Description:**
-
-Suspends a user account, which prevents the user from:
-- Signing in to their account
-- Accessing any Google Workspace services (Gmail, Drive, Calendar, etc.)
-- Receiving new emails (emails will bounce)
-
-The account data is preserved and can be restored by unsuspending the account.
-
-**Flags:**
-- `-r, --reason` - Reason for suspension (optional)
-- `-f, --force` - Skip confirmation prompt
-
-**Common use cases:**
-- Employee termination or departure
-- Policy violations or security incidents
-- Account compromise or suspicious activity
-- Extended leave or sabbatical
-
-#### Unsuspend User Account
-
-```bash
-# Unsuspend a user with confirmation
+# Unsuspend user
 gac user unsuspend user@example.com
-
-# Unsuspend without confirmation
-gac user unsuspend user@example.com --force
 ```
 
-**Description:**
+📖 **Full guide**: [User Management](docs/guides/user-management.md)
 
-Unsuspends a previously suspended user account, restoring the user's ability to:
-- Sign in to their account
-- Access all Google Workspace services (Gmail, Drive, Calendar, etc.)
-- Send and receive emails
-- Access their data and documents
-
-All account data and settings are preserved during suspension and will be available after unsuspending.
-
-**Flags:**
-- `-f, --force` - Skip confirmation prompt
-
-**Common use cases:**
-- Restoring access after employee returns from leave
-- Correcting accidental suspensions
-- Restoring accounts after security incidents are resolved
-- Re-enabling accounts after policy violations are addressed
-
-### Group Management
-
-#### List Groups
+### Group Settings
 
 ```bash
-# List all groups
-gac group list
-
-# List a specific group
-gac group list operations@example.com
-
-# List group with members
-gac group list operations@example.com --get-members
-
-# Show only groups with inactive members
-gac group list --contains-former-employees
-```
-
-**Flags:**
-- `-m, --get-members` - List group members
-- `-i, --contains-former-employees` - Show only groups with inactive members
-
-### Group Settings Management
-
-#### View Group Settings
-
-```bash
-# View group settings in table format
-gac group-settings list operations@example.com
-
-# View group settings as JSON
-gac group-settings list engineering --format json
-```
-
-**Flags:**
-- `-f, --format` - Output format: table or json (default: table)
-
-#### Update Group Settings
-
-```bash
-# Allow anyone in domain to join
-gac group-settings update operations@example.com \
-  --who-can-join ALL_IN_DOMAIN_CAN_JOIN
-
-# Configure posting permissions
-gac group-settings update engineering@example.com \
-  --who-can-post-message ALL_MEMBERS_CAN_POST \
-  --allow-web-posting true
-
-# Disable external members
-gac group-settings update sales@example.com \
+# Configure moderated announcements group
+gac group-settings update announcements@example.com \
+  --who-can-post-message ALL_MANAGERS_CAN_POST \
+  --message-moderation-level MODERATE_ALL_MESSAGES \
   --allow-external-members false
 
-# Add custom footer to group emails
+# Add custom footer
 gac group-settings update support@example.com \
-  --custom-footer-text "For assistance, contact support@example.com" \
+  --custom-footer-text "For help, contact support@example.com" \
   --include-custom-footer true
-
-# Enable message moderation
-gac group-settings update announcements@example.com \
-  --message-moderation-level MODERATE_ALL_MESSAGES \
-  --who-can-moderate-content ALL_MANAGERS_CAN_POST
-
-# Configure reply-to settings
-gac group-settings update team@example.com \
-  --reply-to REPLY_TO_SENDER
-
-# Make group archive-only (read-only)
-gac group-settings update archive@example.com \
-  --archive-only true
 ```
 
-**Common Access Control Values:**
-- `whoCanJoin`: CAN_REQUEST_TO_JOIN, ALL_IN_DOMAIN_CAN_JOIN, ANYONE_CAN_JOIN, INVITED_CAN_JOIN
-- `whoCanViewGroup`: ANYONE_CAN_VIEW, ALL_IN_DOMAIN_CAN_VIEW, ALL_MEMBERS_CAN_VIEW, ALL_MANAGERS_CAN_VIEW
-- `whoCanPostMessage`: NONE_CAN_POST, ALL_MANAGERS_CAN_POST, ALL_MEMBERS_CAN_POST, ALL_IN_DOMAIN_CAN_POST, ANYONE_CAN_POST
+📖 **Full guide**: [Group Settings](docs/guides/group-settings.md)
 
-**Common Moderation Values:**
-- `messageModerationLevel`: MODERATE_ALL_MESSAGES, MODERATE_NON_MEMBERS, MODERATE_NEW_MEMBERS, MODERATE_NONE
-
-**Common Reply-To Values:**
-- `replyTo`: REPLY_TO_CUSTOM, REPLY_TO_SENDER, REPLY_TO_LIST, REPLY_TO_OWNER, REPLY_TO_IGNORE
-
-**Common use cases:**
-- Restricting group access to internal members only
-- Configuring who can post messages to prevent spam
-- Setting up moderated groups for announcements
-- Adding custom footers for compliance or branding
-- Creating read-only archive groups for historical records
-- Controlling member invitation and approval workflows
-
-### Calendar Operations
-
-#### Create Calendar Event
+### Calendar Resources
 
 ```bash
-# All-day event
-gac calendar create user@example.com \
-  -s "Team Building Day" \
-  -b 2025-10-15 \
-  -e 2025-10-16
-
-# Timed event with description
-gac calendar create user@example.com \
-  -s "Sprint Planning" \
-  -d "Q4 2025 Sprint Planning Meeting" \
-  -b 2025-10-15T09:00:00-04:00 \
-  -e 2025-10-15T11:00:00-04:00 \
-  -l "Conference Room A" \
-  -a attendee1@example.com \
-  -a attendee2@example.com
-
-# Recurring event
-gac calendar create user@example.com \
-  -s "Daily Standup" \
-  -b 2025-10-15T09:00:00-04:00 \
-  -e 2025-10-15T09:15:00-04:00 \
-  -f daily \
-  -c 30
-```
-
-**Flags:**
-- `-s, --summary` - Event title (required)
-- `-d, --description` - Event description
-- `-b, --begin` - Event start time in RFC3339 format (required)
-- `-e, --end` - Event end time in RFC3339 format (required)
-- `-l, --location` - Event location (default: "The Matrix")
-- `-a, --attendee` - Event attendees (can be repeated)
-- `-f, --frequency` - Recurrence frequency: daily, weekly, monthly (default: "daily")
-- `-c, --count` - Number of recurrences (default: 1)
-
-#### List Calendar Events
-
-```bash
-# List next 10 events
-gac calendar list user@example.com
-
-# List next 50 events
-gac calendar list user@example.com -n 50
-
-# List events in date range
-gac calendar list user@example.com \
-  --time-min 2025-10-01T00:00:00-04:00 \
-  --time-max 2025-10-31T23:59:59-04:00
-```
-
-**Flags:**
-- `-n, --num-events` - Number of events to return (default: 10)
-- `--time-min` - Minimum event start time (RFC3339 format)
-- `--time-max` - Maximum event start time (RFC3339 format)
-
-#### Update Calendar Event
-
-```bash
-gac calendar update user@example.com \
-  -i event_id_here \
-  -s "Updated Meeting Title" \
-  -b 2025-10-15T10:00:00-04:00 \
-  -e 2025-10-15T11:00:00-04:00
-```
-
-**Flags:**
-- `-i, --event-id` - ID of event to update (required)
-- `-s, --summary` - Updated event title
-- `-d, --description` - Updated description
-- `-b, --begin` - Updated start time
-- `-e, --end` - Updated end time
-- `-l, --location` - Updated location
-- `-a, --attendee` - Updated attendees
-
-### Calendar Resource Management
-
-Calendar resources are bookable items such as conference rooms, equipment, and other shared resources in your Google Workspace domain.
-
-#### List Calendar Resources
-
-```bash
-# List all calendar resources
-gac cal-resource list
-
-# List only conference rooms
-gac cal-resource list --type room
-
-# List only equipment
-gac cal-resource list --type equipment
-```
-
-**Flags:**
-- `-t, --type` - Resource type filter: all, room, equipment, or other (default: "all")
-
-#### Create Calendar Resource
-
-```bash
-# Create a conference room
+# Create conference room
 gac cal-resource create conf-room-a \
   --name "Conference Room A" \
   --type room \
   --capacity 12 \
-  --building-id main-bldg \
-  --floor "3rd Floor"
+  --building-id main-building
 
-# Create equipment
-gac cal-resource create projector-hd-1 \
-  --name "HD Projector" \
-  --type equipment \
-  --category "AV Equipment" \
-  --description "High-definition projector for presentations"
-
-# Create a resource with location details
-gac cal-resource create exec-boardroom \
-  --name "Executive Boardroom" \
-  --type room \
-  --capacity 20 \
-  --building-id hq-building \
-  --floor "10th Floor"
+# List all rooms
+gac cal-resource list --type room
 ```
 
-**Flags:**
-- `-n, --name` - Resource name (required)
-- `-t, --type` - Resource type: room, equipment, or other (default: "room")
-- `-d, --description` - Resource description
-- `-c, --category` - Resource category
-- `-b, --building-id` - Building ID where resource is located
-- `-f, --floor` - Floor name/number
-- `-s, --section` - Floor section
-- `--capacity` - Resource capacity (for rooms)
-- `--user-description` - User-visible description
+📖 **Full guide**: [Calendar Resources](docs/guides/calendar-resources.md)
 
-#### Update Calendar Resource
+### Organizational Units
 
 ```bash
-# Update room capacity
-gac cal-resource update conf-room-a --capacity 15
+# Create OU
+gac ou create /Engineering/Backend
 
-# Update name and description
-gac cal-resource update conf-room-a \
-  --name "Conference Room A (Renovated)" \
-  --description "Newly renovated conference room"
-
-# Update building and floor
-gac cal-resource update room-123 \
-  --building-id new-building \
-  --floor "5th Floor"
-```
-
-**Flags:**
-- `-n, --name` - Updated resource name
-- `-d, --description` - Updated resource description
-- `-c, --category` - Updated resource category
-- `-b, --building-id` - Updated building ID
-- `-f, --floor` - Updated floor name/number
-- `-s, --section` - Updated floor section
-- `--capacity` - Updated resource capacity
-- `--user-description` - Updated user-visible description
-
-#### Delete Calendar Resource
-
-```bash
-# Delete with confirmation prompt
-gac cal-resource delete old-projector
-
-# Delete without confirmation
-gac cal-resource delete conf-room-archived --force
-```
-
-**Flags:**
-- `-f, --force` - Skip confirmation prompt
-
-### Organizational Unit Management
-
-Organizational units (OUs) allow you to organize users and apply different policies to different groups.
-
-#### List Organizational Units
-
-```bash
-# List all organizational units
+# List OUs
 gac ou list
 
-# List specific OU and its children
-gac ou list /Engineering
-
-# List only direct children
-gac ou list /Engineering --type children
+# Move user to OU
+gac user update --ou /Engineering/Backend user@example.com
 ```
 
-**Flags:**
-- `-t, --type` - List type: all or children (default: "all")
+📖 **Full guide**: [Organizational Units](docs/guides/ou-management.md)
 
-#### Create Organizational Unit
+## Documentation
 
-```bash
-# Create a top-level OU
-gac ou create /Engineering --description "Engineering department"
+### 📚 User Guides
+- [User Management](docs/guides/user-management.md) - Create, update, suspend users
+- [Group Management](docs/guides/group-management.md) - Manage groups and memberships
+- [Group Settings](docs/guides/group-settings.md) - Configure group permissions and behavior
+- [Calendar Operations](docs/guides/calendar-operations.md) - Manage calendar events
+- [Calendar Resources](docs/guides/calendar-resources.md) - Manage rooms and equipment
+- [Organizational Units](docs/guides/ou-management.md) - Manage organizational structure
+- [Alias Management](docs/guides/alias-management.md) - Email aliases for users
 
-# Create a nested OU
-gac ou create /Engineering/Backend --description "Backend engineering team"
+### 📖 Reference
+- [Command Reference](docs/reference/commands.md) - Complete command list
+- [Troubleshooting](docs/reference/troubleshooting.md) - Common issues and solutions
 
-# Create with inheritance blocking
-gac ou create /Contractors --block-inheritance
-```
+### 🔧 Configuration & Setup
+- [Installation](docs/installation.md) - Detailed installation instructions
+- [Authentication](docs/authentication.md) - OAuth2 setup and security
+- [Configuration](docs/configuration.md) - Configuration options
 
-**Flags:**
-- `-d, --description` - Organizational unit description
-- `-p, --parent` - Parent OU path (auto-detected from path if not specified)
-- `-b, --block-inheritance` - Block policy inheritance from parent
+### 💻 Development
+- [Contributing](docs/development/contributing.md) - How to contribute
+- [Architecture](docs/development/architecture.md) - Technical design
+- [Debugging](docs/development/debugging.md) - Debug and profile gac
+- [Releasing](docs/development/releasing.md) - Release process
 
-#### Update Organizational Unit
-
-```bash
-# Update description
-gac ou update /Engineering --description "Updated description"
-
-# Rename an OU
-gac ou update /Engineering --name "Engineering-Dept"
-
-# Move an OU to a different parent
-gac ou update /Engineering/QA --parent /Operations
-
-# Enable inheritance blocking
-gac ou update /Contractors --block-inheritance true
-```
-
-**Flags:**
-- `-n, --name` - New name for the organizational unit
-- `-d, --description` - New description
-- `-p, --parent` - New parent OU path
-- `-b, --block-inheritance` - Block policy inheritance (true/false)
-
-#### Delete Organizational Unit
-
-```bash
-# Delete an empty OU (with confirmation prompt)
-gac ou delete /Engineering/Archived
-
-# Force delete without confirmation
-gac ou delete /TempOU --force
-```
-
-**Flags:**
-- `-f, --force` - Skip confirmation prompt
-
-**Note:** The OU must be empty (no users or sub-OUs) before it can be deleted.
-
-### User Alias Management
-
-Email aliases allow users to receive mail at multiple addresses that all deliver to the same mailbox. This is useful for department addresses, role-based addresses, or alternative names.
-
-#### List User Aliases
-
-```bash
-# List all aliases for a user
-gac alias list user@example.com
-
-# List aliases for a specific user
-gac alias list john.doe@example.com
-```
-
-The output shows:
-- The primary user email
-- All configured aliases
-- Total count of aliases
-
-#### Add User Alias
-
-```bash
-# Add a department alias
-gac alias add user@example.com support@example.com
-
-# Add an alternative name
-gac alias add john.doe@example.com jdoe@example.com
-
-# Add a role-based alias
-gac alias add admin@example.com administrator@example.com
-```
-
-**Requirements:**
-- The alias must be in a domain or alias domain managed by your organization
-- The alias cannot already be in use by another user or group
-- The user account must exist
-
-#### Remove User Alias
-
-```bash
-# Remove an alias with confirmation
-gac alias remove user@example.com old-alias@example.com
-
-# Remove an alias without confirmation
-gac alias remove user@example.com support@example.com --force
-```
-
-**Flags:**
-- `-f, --force` - Skip confirmation prompt
-
-**WARNING:** After removal, the alias address will no longer deliver mail to this user.
-
-### Data Transfers
-
-Transfer document ownership from one user to another:
-
-```bash
-gac transfer --from olduser@example.com --to newuser@example.com
-```
-
-**Flags:**
-- `-f, --from` - Source user email address (required)
-- `-t, --to` - Destination user email address (required)
+### 📝 Examples
+- [Examples Directory](examples/) - Runnable scripts for common scenarios
+- [Examples Guide](examples/README.md) - Detailed scenario walkthroughs
 
 ## Command Reference
 
-### Global Commands
+| Category | Commands |
+|----------|----------|
+| **Users** | `create`, `list`, `update`, `suspend`, `unsuspend` |
+| **Groups** | `list` |
+| **Group Settings** | `list`, `update` |
+| **Calendar** | `create`, `list`, `update` |
+| **Calendar Resources** | `list`, `create`, `update`, `delete` |
+| **Organizational Units** | `list`, `create`, `update`, `delete` |
+| **Aliases** | `list`, `add`, `remove` |
+| **Data Transfer** | `transfer` |
 
-| Command | Description |
-|---------|-------------|
-| `gac --help` | Show help for gac |
-| `gac version` | Show version information |
-| `gac completion` | Generate shell completion scripts |
-
-### User Commands
-
-| Command | Description |
-|---------|-------------|
-| `gac user create [email]` | Create a new user |
-| `gac user list [email]` | List users or get details for specific user |
-| `gac user update [email]` | Update user information |
-| `gac user suspend <user-email>` | Suspend a user account |
-| `gac user unsuspend <user-email>` | Unsuspend (restore) a user account |
-
-### Group Commands
-
-| Command | Description |
-|---------|-------------|
-| `gac group list [email]` | List groups or get details for specific group |
-
-### Group Settings Commands
-
-| Command | Description |
-|---------|-------------|
-| `gac group-settings list <group-email>` | View group settings |
-| `gac group-settings update <group-email>` | Update group settings |
-
-### Calendar Commands
-
-| Command | Description |
-|---------|-------------|
-| `gac calendar create [email]` | Create a calendar event |
-| `gac calendar list [email]` | List calendar events |
-| `gac calendar update [email]` | Update a calendar event |
-
-### Organizational Unit Commands
-
-| Command | Description |
-|---------|-------------|
-| `gac ou list [ou-path]` | List organizational units |
-| `gac ou create <ou-path>` | Create a new organizational unit |
-| `gac ou update <ou-path>` | Update an organizational unit |
-| `gac ou delete <ou-path>` | Delete an organizational unit |
-
-### Alias Commands
-
-| Command | Description |
-|---------|-------------|
-| `gac alias list <user-email>` | List aliases for a user |
-| `gac alias add <user-email> <alias-email>` | Add an alias to a user |
-| `gac alias remove <user-email> <alias-email>` | Remove an alias from a user |
-
-### Transfer Commands
-
-| Command | Description |
-|---------|-------------|
-| `gac transfer --from [email] --to [email]` | Transfer data ownership |
+📖 **Full command reference**: [docs/reference/commands.md](docs/reference/commands.md)
 
 ## Troubleshooting
 
-### Authentication Issues
+### Common Issues
 
-**Problem**: "Invalid client secret path" or "Access denied"
-
-**Solution**:
-1. Verify your OAuth2 credentials are correctly set up in Google Cloud Console
-2. Check that the client secret file exists and has correct permissions:
-   ```bash
-   ls -l ~/.credentials/client_secret.json
-   chmod 600 ~/.credentials/client_secret.json
-   ```
-3. Ensure you're authenticating with a Google Workspace admin account
-4. Verify the required APIs are enabled in Google Cloud Console:
-   - Admin SDK API
-   - Google Calendar API
-
-**Problem**: "Token expired" or "Invalid token"
-
-**Solution**:
+**Authentication errors**
 ```bash
-# Delete the cached token and re-authenticate
+# Delete cached token and re-authenticate
 rm ~/.credentials/gac.json
 gac user list
 ```
 
-### Permission Issues
+**Permission errors**
+- Verify you have Google Workspace admin privileges
+- Check OAuth scopes in [docs/authentication.md](docs/authentication.md)
+- Ensure required APIs are enabled in Google Cloud Console
 
-**Problem**: "Permission denied" or "Insufficient permissions"
-
-**Solution**:
-1. Verify the authenticated account has Google Workspace admin privileges
-2. Check that all required OAuth2 scopes are granted (see [CREDENTIALS.md](CREDENTIALS.md))
-3. Try deleting and re-creating your OAuth2 credentials in Google Cloud Console
-
-### File Permission Warnings
-
-**Problem**: Warnings about insecure file permissions
-
-**Solution**:
+**Domain configuration**
 ```bash
-# Fix credential directory permissions
-chmod 700 ~/.credentials
-
-# Fix credential file permissions
-chmod 600 ~/.credentials/*.json
+# Set domain via environment variable
+export GAC_DOMAIN=example.com
+gac user list
 ```
 
-### Domain Configuration Issues
-
-**Problem**: Commands fail with domain-related errors
-
-**Solution**:
-1. Set your domain in configuration:
-   ```bash
-   # Via environment variable
-   export GAC_DOMAIN=example.com
-
-   # Via config file
-   echo "domain: example.com" > ~/.google-admin.yaml
-
-   # Via command-line flag
-   gac --domain example.com user list
-   ```
-
-### Input Validation Errors
-
-**Problem**: "Invalid email address" or "Invalid phone format"
-
-**Solution**:
-- **Emails**: Must be valid RFC 5322 format (e.g., `user@example.com`)
-- **Phone numbers**: Format as `type:number` (e.g., `mobile:555-555-5555`)
-  - Multiple phones: `mobile:555-555-5555; work:555-123-4567,555`
-- **UUIDs**: Must be valid UUID format (use `uuidgen` on macOS/Linux)
-
-### API Rate Limiting
-
-**Problem**: "Rate limit exceeded" or "Quota exceeded"
-
-**Solution**:
-1. Implement delays between bulk operations
-2. Reduce the frequency of API calls
-3. Check your quota limits in Google Cloud Console
-4. Consider requesting a quota increase if needed
-
-### Getting Help
-
-If you encounter issues not covered here:
-
-1. Check the [CREDENTIALS.md](CREDENTIALS.md) for authentication details
-2. Review the [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
-3. Check existing [GitHub Issues](https://github.com/acockrell/google-admin-client/issues)
-4. Open a new issue with:
-   - Command you ran
-   - Error message
-   - Your configuration (redact sensitive info)
-   - Steps to reproduce
+📖 **Full troubleshooting guide**: [docs/reference/troubleshooting.md](docs/reference/troubleshooting.md)
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
-
+We welcome contributions! See [CONTRIBUTING.md](docs/development/contributing.md) for:
 - Reporting bugs
 - Suggesting features
 - Submitting pull requests
 - Development setup
-- Code style and testing requirements
-
-## Architecture
-
-For technical details about the project structure, design decisions, and extension points, see [ARCHITECTURE.md](ARCHITECTURE.md).
-
-## Related Documentation
-
-- [CREDENTIALS.md](CREDENTIALS.md) - OAuth2 setup and security practices
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Development and contribution guidelines
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture documentation
-- [DEBUGGING.md](DEBUGGING.md) - Debugging guide for developers
-- [RELEASE.md](RELEASE.md) - Release process documentation
 
 ## License
 
@@ -961,6 +272,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Built with [Cobra](https://github.com/spf13/cobra) CLI framework
-- Uses [Viper](https://github.com/spf13/viper) for configuration management
-- Powered by [Google Admin SDK](https://developers.google.com/admin-sdk)
+Built with:
+- [Cobra](https://github.com/spf13/cobra) - CLI framework
+- [Viper](https://github.com/spf13/viper) - Configuration management
+- [Google Admin SDK](https://developers.google.com/admin-sdk) - Google Workspace APIs
+
+## Links
+
+- **Documentation**: [docs/](docs/)
+- **Examples**: [examples/](examples/)
+- **Issues**: [GitHub Issues](https://github.com/acockrell/google-admin-client/issues)
+- **Releases**: [GitHub Releases](https://github.com/acockrell/google-admin-client/releases)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+
+---
+
+Made with ❤️ for Google Workspace administrators
