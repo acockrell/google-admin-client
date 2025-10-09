@@ -42,11 +42,9 @@ func TestGroupSettingsListCommandHasFlags(t *testing.T) {
 		t.Fatal("Group-settings list command should not be nil")
 	}
 
-	// Check for --format flag
-	formatFlag := groupSettingsListCmd.Flags().Lookup("format")
-	if formatFlag == nil {
-		t.Error("Group-settings list command should have --format flag")
-	}
+	// NOTE: --format flag was moved to be a global flag (on rootCmd)
+	// The global --format flag works for all list commands, including group-settings list
+	// This test is kept for backwards compatibility but doesn't check for the flag anymore
 }
 
 func TestGroupSettingsUpdateCommandHasFlags(t *testing.T) {

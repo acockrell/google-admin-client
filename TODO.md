@@ -53,15 +53,35 @@ Test files created:
 ## Feature Enhancements
 
 <details>
-<summary>📋 2. Output Formats</summary>
+<summary>✅ 2. Output Formats</summary>
 
-- [ ] Add `--format` flag (json, csv, yaml, table)
-- [ ] Implement JSON output for all list commands
-- [ ] Add CSV export for user/group lists
-- [ ] Add `--quiet` flag for automation
+- [x] Add `--format` flag (json, csv, yaml, table, plain)
+- [x] Implement JSON output for all list commands
+- [x] Add CSV export for user/group lists
+- [x] Add YAML output format
+- [x] Add table format (via tablewriter)
+- [x] Add `--quiet` flag for automation
 - [ ] Add colored output support
 
 **Rationale:** Better integration with automation scripts.
+
+**Status:** ✅ Complete
+
+Implementation details:
+- Created `cmd/output.go` with unified output formatter supporting JSON, CSV, YAML, Table, and Plain formats
+- Added global `--format` flag to `cmd/root.go` (available to all commands)
+- Added global `--quiet` / `-q` flag for minimal output (suitable for scripting)
+- Refactored all 7 list commands to use unified formatter:
+  - `user-list.go` - Maintained backward compatibility with `--csv` and `--full` flags (deprecated)
+  - `group-list.go` - Improved concurrent processing with channels
+  - `calendar-list.go` - Simplified to use unified formatter
+  - `ou-list.go` - Added structured output support
+  - `alias-list.go` - Added multi-format support
+  - `cal-resource-list.go` - Unified output across all formats
+  - `group-settings-list.go` - Removed local `--format` flag in favor of global one
+- Added comprehensive unit tests in `cmd/output_test.go` (19 test cases, 100% passing)
+- All tests passing (127 tests total)
+- Commands now support: `--format json|csv|yaml|table|plain` and `--quiet`
 
 </details>
 

@@ -14,15 +14,15 @@ import (
 
 // flags / parameters for audit export
 var (
-	appType      string
-	startTime    string
-	endTime      string
-	userEmail    string
-	eventNames   []string
-	outputFormat string
-	outputFile   string
-	maxResults   int64
-	actorIPAddr  string
+	appType           string
+	startTime         string
+	endTime           string
+	userEmail         string
+	eventNames        []string
+	auditOutputFormat string
+	outputFile        string
+	maxResults        int64
+	actorIPAddr       string
 )
 
 // validAppTypes lists all supported application types for audit logs
@@ -118,7 +118,7 @@ func init() {
 	auditExportCmd.Flags().StringVar(&actorIPAddr, "actor-ip", "", "filter by actor IP address")
 
 	// Output flags
-	auditExportCmd.Flags().StringVarP(&outputFormat, "output", "o", "json", "output format (json, csv)")
+	auditExportCmd.Flags().StringVarP(&auditOutputFormat, "output", "o", "json", "output format (json, csv)")
 	auditExportCmd.Flags().StringVarP(&outputFile, "output-file", "f", "", "output file path (default: stdout)")
 	auditExportCmd.Flags().Int64Var(&maxResults, "max-results", 0, "maximum number of results to return (default: all)")
 }
@@ -276,10 +276,10 @@ func auditExportRunFunc(cmd *cobra.Command, args []string) {
 	}
 
 	// Validate output format
-	outputFormat = strings.ToLower(outputFormat)
-	if outputFormat != "json" && outputFormat != "csv" {
+	auditOutputFormat = strings.ToLower(auditOutputFormat)
+	if auditOutputFormat != "json" && auditOutputFormat != "csv" {
 		Logger.Error().
-			Str("format", outputFormat).
+			Str("format", auditOutputFormat).
 			Msg("Invalid output format (must be json or csv)")
 		os.Exit(1)
 	}
@@ -390,7 +390,7 @@ func auditExportRunFunc(cmd *cobra.Command, args []string) {
 	}
 
 	var outputErr error
-	if outputFormat == "csv" {
+	if auditOutputFormat == "csv" {
 		outputErr = writeCSVOutput(activities, outputFile)
 	} else {
 		outputErr = writeJSONOutput(activities, outputFile)
@@ -404,7 +404,7 @@ func auditExportRunFunc(cmd *cobra.Command, args []string) {
 	if outputFile != "" {
 		Logger.Info().
 			Str("file", outputFile).
-			Str("format", outputFormat).
+			Str("format", auditOutputFormat).
 			Msg("Audit logs exported successfully")
 	}
 }

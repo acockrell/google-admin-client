@@ -3,10 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
-	admin "google.golang.org/api/admin/directory/v1"
 )
 
 var (
@@ -46,6 +44,16 @@ func init() {
 	ouListCmd.Flags().StringVarP(&ouListType, "type", "t", "all", "list type: all or children")
 }
 
+// ouListItem represents a simplified OU for list output
+type ouListItem struct {
+	Name             string `json:"name"`
+	Path             string `json:"path"`
+	Description      string `json:"description"`
+	ParentPath       string `json:"parentPath"`
+	ID               string `json:"id"`
+	BlockInheritance string `json:"blockInheritance"`
+}
+
 func ouListRunFunc(cmd *cobra.Command, args []string) error {
 	client, err := newAdminClient()
 	if err != nil {
@@ -83,43 +91,43 @@ func ouListRunFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(result.OrganizationUnits) == 0 {
-		fmt.Println("No organizational units found.")
+		QuietPrintln("No organizational units found.")
 		return nil
 	}
 
-	// Display the organizational units
-	fmt.Printf("Found %d organizational unit(s):\n\n", len(result.OrganizationUnits))
+	QuietPrintf("Found %d organizational unit(s):\n\n", len(result.OrganizationUnits))
 
+	// Convert to simplified list items
+	var items []ouListItem
 	for _, ou := range result.OrganizationUnits {
-		displayOU(ou)
-		fmt.Println()
+		blockInheritance := "No"
+		if ou.BlockInheritance {
+			blockInheritance = "Yes"
+		}
+		item := ouListItem{
+			Name:             ou.Name,
+			Path:             ou.OrgUnitPath,
+			Description:      ou.Description,
+			ParentPath:       ou.ParentOrgUnitPath,
+			ID:               ou.OrgUnitId,
+			BlockInheritance: blockInheritance,
+		}
+		items = append(items, item)
+	}
+
+	headers := []string{"Name", "Path", "Description", "ParentPath", "ID", "BlockInheritance"}
+
+	// For JSON/YAML, output full OU data
+	var outputData interface{}
+	if outputFormat == OutputFormatJSON || outputFormat == OutputFormatYAML {
+		outputData = result.OrganizationUnits
+	} else {
+		outputData = items
+	}
+
+	if err := FormatOutput(outputData, headers); err != nil {
+		return fmt.Errorf("failed to format output: %w", err)
 	}
 
 	return nil
-}
-
-func displayOU(ou *admin.OrgUnit) {
-	// Calculate indentation based on path depth
-	depth := strings.Count(ou.OrgUnitPath, "/") - 1
-	if depth < 0 {
-		depth = 0
-	}
-	indent := strings.Repeat("  ", depth)
-
-	fmt.Printf("%s%s\n", indent, ou.Name)
-	fmt.Printf("%s  Path: %s\n", indent, ou.OrgUnitPath)
-
-	if ou.Description != "" {
-		fmt.Printf("%s  Description: %s\n", indent, ou.Description)
-	}
-
-	if ou.ParentOrgUnitPath != "" {
-		fmt.Printf("%s  Parent: %s\n", indent, ou.ParentOrgUnitPath)
-	}
-
-	fmt.Printf("%s  ID: %s\n", indent, ou.OrgUnitId)
-
-	if ou.BlockInheritance {
-		fmt.Printf("%s  Block Inheritance: Yes\n", indent)
-	}
 }

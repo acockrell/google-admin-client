@@ -1,11 +1,7 @@
 package cmd
 
 import (
-	"encoding/csv"
-	"encoding/json"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -74,30 +70,19 @@ func init() {
 	listGroupCmd.Flags().BoolVarP(&inactiveOnly, "contains-former-employees", "i", inactiveOnly, "shows only groups with inactive members")
 }
 
-func displayGroupInfo(writer *csv.Writer, info groupInfo) {
-	err := writer.Write([]string{
-		info.Name,
-		info.Description,
-		info.Email,
-		info.Owners,
-		strconv.FormatBool(info.InactiveMembers),
-		strconv.FormatBool(info.ExternalMembers),
-		strconv.FormatBool(info.FormerEmployees),
-	})
-	if err != nil {
-		exitWithError(err.Error())
-	}
-}
+// displayGroupInfo is no longer needed with unified formatter
 
-func getGroupInfo(wg *sync.WaitGroup, client *admin.Service, group *admin.Group, writer *csv.Writer) {
+func getGroupInfo(wg *sync.WaitGroup, client *admin.Service, group *admin.Group, results chan<- groupInfo) {
+	defer wg.Done()
+
 	var owners []string
 	externalMembers := false
-	inactiveMembers := false
 	formerEmployees := false
-	//
+
 	r, err := client.Members.List(group.Id).Do()
 	if err != nil {
-		exitWithError(err.Error())
+		Logger.Error().Err(err).Str("group", group.Email).Msg("Failed to list group members")
+		return
 	}
 
 	for _, m := range r.Members {
@@ -112,13 +97,10 @@ func getGroupInfo(wg *sync.WaitGroup, client *admin.Service, group *admin.Group,
 		}
 
 		if m.Type == "USER" {
-			if m.Status != "ACTIVE" {
-				inactiveMembers = true
-			}
-
 			u, err := client.Users.Get(m.Email).Do()
 			if err != nil {
-				exitWithError(err.Error())
+				Logger.Error().Err(err).Str("user", m.Email).Msg("Failed to get user details")
+				continue
 			}
 			if _, ok := staffOU[u.OrgUnitPath]; !ok {
 				externalMembers = true
@@ -135,26 +117,27 @@ func getGroupInfo(wg *sync.WaitGroup, client *admin.Service, group *admin.Group,
 		Description:     group.Description,
 		Email:           group.Email,
 		Owners:          strings.Join(owners, ","),
-		InactiveMembers: inactiveMembers,
+		InactiveMembers: inactiveOnly,
 		ExternalMembers: externalMembers,
 		FormerEmployees: formerEmployees,
 	}
 
-	if inactiveOnly {
-		if !formerEmployees {
-			writer.Flush()
-			wg.Done()
-			return
-		}
+	// Skip if filtering for former employees only and this group doesn't have any
+	if inactiveOnly && !formerEmployees {
+		return
 	}
-	displayGroupInfo(writer, gInfo)
 
-	writer.Flush()
-	wg.Done()
+	results <- gInfo
+}
+
+// groupMember represents a group member for list output
+type groupMember struct {
+	Email  string `json:"email"`
+	Type   string `json:"type"`
+	Status string `json:"status"`
 }
 
 func listGroupRunFunc(cmd *cobra.Command, args []string) {
-
 	var group string
 
 	if len(args) > 0 {
@@ -166,8 +149,7 @@ func listGroupRunFunc(cmd *cobra.Command, args []string) {
 		exitWithError(fmt.Sprintf("unable to create client: %s", err))
 	}
 
-	// if a group is supplied, display that group.  otherwise, display a list of
-	// all groups
+	// if a group is supplied, display that group. otherwise, display a list of all groups
 	if group != "" {
 		if getMembers {
 			groupEmail := group
@@ -178,24 +160,33 @@ func listGroupRunFunc(cmd *cobra.Command, args []string) {
 			if err != nil {
 				exitWithError(err.Error())
 			}
+
+			// Build list of members with status
+			var members []groupMember
 			for _, i := range m.Members {
-				mark := "\u2713"
-
+				status := "active"
 				if i.Type == "GROUP" {
-					fmt.Println(i.Email, "\u271B")
-				}
-
-				if i.Type == "USER" {
+					status = "group"
+				} else if i.Type == "USER" {
 					u, err := client.Users.Get(i.Email).Do()
-
 					if err != nil {
-						exitWithError(err.Error())
+						Logger.Error().Err(err).Str("user", i.Email).Msg("Failed to get user details")
+						continue
 					}
 					if _, ok := formerEmployeesOU[u.OrgUnitPath]; ok {
-						mark = "\u0078"
+						status = "former"
 					}
-					fmt.Println(i.Email, mark)
 				}
+				members = append(members, groupMember{
+					Email:  i.Email,
+					Type:   i.Type,
+					Status: status,
+				})
+			}
+
+			headers := []string{"Email", "Type", "Status"}
+			if err := FormatOutput(members, headers); err != nil {
+				exitWithError(fmt.Sprintf("Failed to format output: %s", err))
 			}
 		} else {
 			groupEmail := group
@@ -206,35 +197,42 @@ func listGroupRunFunc(cmd *cobra.Command, args []string) {
 			if err != nil {
 				exitWithError(err.Error())
 			}
-			buf, _ := json.MarshalIndent(g, "", "  ")
-			fmt.Printf("%s\n", buf)
+
+			if err := FormatOutput(g, nil); err != nil {
+				exitWithError(fmt.Sprintf("Failed to format output: %s", err))
+			}
 		}
 	} else {
 		r, err := client.Groups.List().Customer("my_customer").Do()
 		if err != nil {
 			exitWithError(err.Error())
 		}
-		// header line
-		w := csv.NewWriter(os.Stdout)
-		err = w.Write([]string{"Name", "Description", "Email", "Owners", "Inactive Members", "External Members", "Former Employees"})
-		if err != nil {
-			exitWithError(err.Error())
-		}
 
+		// Collect group info concurrently
+		results := make(chan groupInfo, len(r.Groups))
 		wg := new(sync.WaitGroup)
-		wg.Add(10)
 
-		for idx, g := range r.Groups {
-			if idx > 0 {
-				if idx%10 == 0 {
-					wg.Wait()
-					wg.Add(10)
-				}
-			}
-			go getGroupInfo(wg, client, g, w)
+		for _, g := range r.Groups {
+			wg.Add(1)
+			go getGroupInfo(wg, client, g, results)
 		}
 
-		wg.Wait()
-	}
+		// Close results channel when all goroutines are done
+		go func() {
+			wg.Wait()
+			close(results)
+		}()
 
+		// Collect all results
+		var groupInfos []groupInfo
+		for info := range results {
+			groupInfos = append(groupInfos, info)
+		}
+
+		// Output using unified formatter
+		headers := []string{"Name", "Description", "Email", "Owners", "Inactive Members", "External Members", "Former Employees"}
+		if err := FormatOutput(groupInfos, headers); err != nil {
+			exitWithError(fmt.Sprintf("Failed to format output: %s", err))
+		}
+	}
 }

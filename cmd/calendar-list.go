@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -67,6 +66,8 @@ func listCalendarRunFunc(cmd *cobra.Command, args []string) {
 	if err != nil {
 		exitWithError(err.Error())
 	}
-	buf, _ := json.MarshalIndent(c, "", "  ")
-	fmt.Printf("%s\n", buf)
+
+	if err := FormatOutput(c.Items, nil); err != nil {
+		exitWithError(fmt.Sprintf("Failed to format output: %s", err))
+	}
 }
