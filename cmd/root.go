@@ -10,12 +10,14 @@ import (
 
 // flags and parameters
 var (
-	cfgFile  string
-	domain   string
-	verbose  bool
-	logLevel string
-	jsonLog  bool
-	yesFlag  bool // Global --yes flag to skip all confirmations
+	cfgFile    string
+	domain     string
+	verbose    bool
+	logLevel   string
+	jsonLog    bool
+	yesFlag    bool   // Global --yes flag to skip all confirmations
+	formatFlag string // Global --format flag for output formatting
+	quietFlag  bool   // Global --quiet flag for minimal output
 )
 
 var rootCmd = &cobra.Command{
@@ -29,6 +31,14 @@ var rootCmd = &cobra.Command{
 		InitLogger(verbose, logLevel, jsonLog)
 		// Set global confirmation skip flag
 		skipConfirmations = yesFlag
+		// Set output format and quiet mode
+		if formatFlag != "" {
+			if err := ValidateOutputFormat(formatFlag); err != nil {
+				Logger.Fatal().Err(err).Msg("Invalid output format")
+			}
+			outputFormat = OutputFormat(formatFlag)
+		}
+		quietMode = quietFlag
 	},
 }
 
@@ -50,6 +60,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "log level (debug, info, warn, error)")
 	rootCmd.PersistentFlags().BoolVar(&jsonLog, "json-log", false, "output logs in JSON format")
 	rootCmd.PersistentFlags().BoolVarP(&yesFlag, "yes", "y", false, "skip all confirmation prompts (use with caution)")
+	rootCmd.PersistentFlags().StringVar(&formatFlag, "format", "", "output format: json, csv, yaml, table, plain (default: plain)")
+	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "quiet mode - minimal output suitable for scripting")
 
 	// Maintain backward compatibility with old flag names
 	rootCmd.PersistentFlags().StringVar(&clientSecret, "secret", clientSecret, "deprecated: use --client-secret instead")

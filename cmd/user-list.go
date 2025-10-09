@@ -1,11 +1,7 @@
 package cmd
 
 import (
-	"encoding/csv"
-	"encoding/json"
 	"fmt"
-	"os"
-	"strconv"
 
 	admin "google.golang.org/api/admin/directory/v1"
 
@@ -14,8 +10,8 @@ import (
 
 // flags / parameters
 var (
-	fullOutput   bool
-	csvOutput    bool
+	fullOutput   bool // Deprecated: use --format=json instead
+	csvOutput    bool // Deprecated: use --format=csv instead
 	disabledOnly = false
 )
 
@@ -39,16 +35,17 @@ $ gac user list username@example.com
 func init() {
 	userCmd.AddCommand(listUserCmd)
 
-	// Here you will define your flags and configuration settings.
+	// Backward compatibility flags (deprecated)
+	listUserCmd.Flags().BoolVarP(&fullOutput, "full", "f", false, "deprecated: use --format=json instead")
+	listUserCmd.Flags().BoolVarP(&csvOutput, "csv", "c", false, "deprecated: use --format=csv instead")
+	if err := listUserCmd.Flags().MarkDeprecated("full", "use --format=json instead"); err != nil {
+		Logger.Warn().Err(err).Msg("Failed to mark full flag as deprecated")
+	}
+	if err := listUserCmd.Flags().MarkDeprecated("csv", "use --format=csv instead"); err != nil {
+		Logger.Warn().Err(err).Msg("Failed to mark csv flag as deprecated")
+	}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// update-profileCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	listUserCmd.Flags().BoolVarP(&fullOutput, "full", "f", false, "full export")
-	listUserCmd.Flags().BoolVarP(&csvOutput, "csv", "c", false, "csv export")
+	// Other flags
 	listUserCmd.Flags().BoolVarP(&disabledOnly, "disabled-only", "d", disabledOnly, "lists only disabled accounts")
 }
 
@@ -67,8 +64,15 @@ func filterDisabledOnly(u admin.Users) admin.Users {
 	return formerEmployees
 }
 
-func listUserRunFunc(cmd *cobra.Command, args []string) {
+// userListItem represents a simplified user for list output
+type userListItem struct {
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	Admin       string `json:"admin"`
+	OrgUnitPath string `json:"orgUnitPath"`
+}
 
+func listUserRunFunc(cmd *cobra.Command, args []string) {
 	var email string
 
 	if len(args) > 0 {
@@ -80,16 +84,25 @@ func listUserRunFunc(cmd *cobra.Command, args []string) {
 		exitWithError(fmt.Sprintf("unable to create client: %s", err))
 	}
 
-	// if email is supplied, display that user.  otherwise, display a list of
-	// all users
+	// Handle backward compatibility with deprecated flags
+	originalFormat := outputFormat
+	if fullOutput {
+		outputFormat = OutputFormatJSON
+	} else if csvOutput {
+		outputFormat = OutputFormatCSV
+	}
 
+	// if email is supplied, display that user. otherwise, display a list of all users
 	if email != "" {
 		u, err := client.Users.Get(email).Do(Projection("FULL"))
 		if err != nil {
 			exitWithError(err.Error())
 		}
-		buf, _ := json.MarshalIndent(u, "", "  ")
-		fmt.Printf("%s\n", buf)
+
+		// For single user, always show full details
+		if err := FormatOutput(u, nil); err != nil {
+			exitWithError(fmt.Sprintf("Failed to format output: %s", err))
+		}
 	} else {
 		var u admin.Users
 		var pageToken string
@@ -110,32 +123,32 @@ func listUserRunFunc(cmd *cobra.Command, args []string) {
 			u = filterDisabledOnly(u)
 		}
 
-		if fullOutput {
-			buf, _ := json.MarshalIndent(u, "", "  ")
-			fmt.Printf("%s\n", buf)
-		} else if csvOutput {
-			w := csv.NewWriter(os.Stdout)
-			if err := w.Write([]string{"Name", "Email", "Admin", "OrgUnitPath"}); err != nil {
-				exitWithError(fmt.Sprintf("Failed to write CSV header: %s", err))
+		// Convert to simplified list items for CSV/table/plain formats
+		headers := []string{"Name", "Email", "Admin", "OrgUnitPath"}
+		var items []userListItem
+		for _, user := range u.Users {
+			item := userListItem{
+				Name:        user.Name.FullName,
+				Email:       user.PrimaryEmail,
+				Admin:       fmt.Sprintf("%v", user.IsAdmin),
+				OrgUnitPath: user.OrgUnitPath,
 			}
-			for _, user := range u.Users {
-				if err := w.Write([]string{
-					user.Name.FullName,
-					user.PrimaryEmail,
-					strconv.FormatBool(user.IsAdmin),
-					user.OrgUnitPath,
-				}); err != nil {
-					exitWithError(fmt.Sprintf("Failed to write CSV row: %s", err))
-				}
-			}
-			w.Flush()
-			if err := w.Error(); err != nil {
-				exitWithError(fmt.Sprintf("CSV writer error: %s", err))
-			}
+			items = append(items, item)
+		}
+
+		// For JSON/YAML, output full user data
+		var outputData interface{}
+		if outputFormat == OutputFormatJSON || outputFormat == OutputFormatYAML {
+			outputData = u.Users
 		} else {
-			for _, user := range u.Users {
-				fmt.Printf("%s (%s) (Admin: %v) (OrgUnitPath: %s)\n", user.PrimaryEmail, user.Name.FullName, user.IsAdmin, user.OrgUnitPath)
-			}
+			outputData = items
+		}
+
+		if err := FormatOutput(outputData, headers); err != nil {
+			exitWithError(fmt.Sprintf("Failed to format output: %s", err))
 		}
 	}
+
+	// Restore original format
+	outputFormat = originalFormat
 }

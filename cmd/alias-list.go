@@ -73,23 +73,34 @@ func aliasListRunFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	// Display results
-	fmt.Printf("Aliases for %s:\n\n", userEmail)
+	QuietPrintf("Aliases for %s:\n\n", userEmail)
 
 	if len(result.Aliases) == 0 {
-		fmt.Println("No aliases found.")
+		QuietPrintln("No aliases found.")
 		return nil
 	}
 
-	for i, aliasInterface := range result.Aliases {
+	// Convert aliases to simple struct for formatting
+	type aliasItem struct {
+		Alias string `json:"alias"`
+	}
+
+	var aliases []aliasItem
+	for _, aliasInterface := range result.Aliases {
 		// The Aliases field is []interface{}, so we need to type assert
 		if aliasMap, ok := aliasInterface.(map[string]interface{}); ok {
 			if aliasEmail, ok := aliasMap["alias"].(string); ok {
-				fmt.Printf("%d. %s\n", i+1, aliasEmail)
+				aliases = append(aliases, aliasItem{Alias: aliasEmail})
 			}
 		}
 	}
 
-	fmt.Printf("\nTotal: %d alias(es)\n", len(result.Aliases))
+	headers := []string{"Alias"}
+	if err := FormatOutput(aliases, headers); err != nil {
+		return fmt.Errorf("failed to format output: %w", err)
+	}
+
+	QuietPrintf("\nTotal: %d alias(es)\n", len(result.Aliases))
 
 	return nil
 }

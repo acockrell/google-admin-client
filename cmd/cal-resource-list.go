@@ -100,77 +100,63 @@ func calResourceListRunFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(filteredResources) == 0 {
-		fmt.Printf("No calendar resources found matching type: %s\n", calResourceListType)
+		QuietPrintf("No calendar resources found matching type: %s\n", calResourceListType)
 		return nil
 	}
 
 	// Display the calendar resources
-	fmt.Printf("Found %d calendar resource(s):\n\n", len(filteredResources))
+	QuietPrintf("Found %d calendar resource(s):\n\n", len(filteredResources))
 
+	// Convert to simplified list items
+	type calResourceItem struct {
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		ID          string `json:"id"`
+		Type        string `json:"type"`
+		Building    string `json:"building"`
+		Floor       string `json:"floor"`
+		Capacity    int64  `json:"capacity"`
+		Description string `json:"description"`
+	}
+
+	var items []calResourceItem
 	for _, resource := range filteredResources {
-		displayResource(resource, buildingMap)
-		fmt.Println()
+		building := ""
+		if resource.BuildingId != "" {
+			buildingName := buildingMap[resource.BuildingId]
+			if buildingName != "" {
+				building = fmt.Sprintf("%s (%s)", buildingName, resource.BuildingId)
+			} else {
+				building = resource.BuildingId
+			}
+		}
+
+		item := calResourceItem{
+			Name:        resource.ResourceName,
+			Email:       resource.ResourceEmail,
+			ID:          resource.ResourceId,
+			Type:        resource.ResourceType,
+			Building:    building,
+			Floor:       resource.FloorName,
+			Capacity:    resource.Capacity,
+			Description: resource.ResourceDescription,
+		}
+		items = append(items, item)
+	}
+
+	headers := []string{"Name", "Email", "ID", "Type", "Building", "Floor", "Capacity", "Description"}
+
+	// For JSON/YAML, output full resource data
+	var outputData interface{}
+	if outputFormat == OutputFormatJSON || outputFormat == OutputFormatYAML {
+		outputData = filteredResources
+	} else {
+		outputData = items
+	}
+
+	if err := FormatOutput(outputData, headers); err != nil {
+		return fmt.Errorf("failed to format output: %w", err)
 	}
 
 	return nil
-}
-
-func displayResource(resource *admin.CalendarResource, buildingMap map[string]string) {
-	fmt.Printf("%s\n", resource.ResourceName)
-	fmt.Printf("  Email: %s\n", resource.ResourceEmail)
-	fmt.Printf("  ID: %s\n", resource.ResourceId)
-	fmt.Printf("  Type: %s\n", resource.ResourceType)
-
-	if resource.ResourceDescription != "" {
-		fmt.Printf("  Description: %s\n", resource.ResourceDescription)
-	}
-
-	if resource.ResourceCategory != "" {
-		fmt.Printf("  Category: %s\n", resource.ResourceCategory)
-	}
-
-	if resource.BuildingId != "" {
-		buildingName := buildingMap[resource.BuildingId]
-		if buildingName != "" {
-			fmt.Printf("  Building: %s (%s)\n", buildingName, resource.BuildingId)
-		} else {
-			fmt.Printf("  Building ID: %s\n", resource.BuildingId)
-		}
-	}
-
-	if resource.FloorName != "" {
-		fmt.Printf("  Floor: %s\n", resource.FloorName)
-	}
-
-	if resource.FloorSection != "" {
-		fmt.Printf("  Floor Section: %s\n", resource.FloorSection)
-	}
-
-	if resource.Capacity > 0 {
-		fmt.Printf("  Capacity: %d\n", resource.Capacity)
-	}
-
-	if resource.UserVisibleDescription != "" {
-		fmt.Printf("  User Visible Description: %s\n", resource.UserVisibleDescription)
-	}
-
-	// Handle FeatureInstances (interface{} type requires type assertion)
-	if resource.FeatureInstances != nil {
-		if features, ok := resource.FeatureInstances.([]interface{}); ok && len(features) > 0 {
-			fmt.Printf("  Features: ")
-			for i, f := range features {
-				if i > 0 {
-					fmt.Printf(", ")
-				}
-				if featureMap, ok := f.(map[string]interface{}); ok {
-					if feature, ok := featureMap["feature"].(map[string]interface{}); ok {
-						if name, ok := feature["name"].(string); ok {
-							fmt.Printf("%s", name)
-						}
-					}
-				}
-			}
-			fmt.Println()
-		}
-	}
 }
