@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -156,32 +157,62 @@ func listGroupRunFunc(cmd *cobra.Command, args []string) {
 			if !strings.Contains(group, "@") {
 				groupEmail = group + "@" + getDomain()
 			}
-			m, err := client.Members.List(groupEmail).Do()
-			if err != nil {
-				exitWithError(err.Error())
-			}
 
-			// Build list of members with status
+			// Try cache for group members
+			cacheKey := getCacheKey("group-members", groupEmail, nil)
+			cacheTTL := getCacheTTL()
+
 			var members []groupMember
-			for _, i := range m.Members {
-				status := "active"
-				if i.Type == "GROUP" {
-					status = "group"
-				} else if i.Type == "USER" {
-					u, err := client.Users.Get(i.Email).Do()
-					if err != nil {
-						Logger.Error().Err(err).Str("user", i.Email).Msg("Failed to get user details")
-						continue
+
+			// Try to read from cache first
+			cachedData, err := readFromCache(cacheKey, cacheTTL)
+			if err == nil {
+				// Cache hit
+				if membersData, ok := cachedData.([]interface{}); ok {
+					for _, memberInterface := range membersData {
+						memberBytes, _ := json.Marshal(memberInterface)
+						var member groupMember
+						if err := json.Unmarshal(memberBytes, &member); err == nil {
+							members = append(members, member)
+						}
 					}
-					if _, ok := formerEmployeesOU[u.OrgUnitPath]; ok {
-						status = "former"
-					}
+					Logger.Debug().Str("key", cacheKey).Int("count", len(members)).Msg("Using cached group members")
 				}
-				members = append(members, groupMember{
-					Email:  i.Email,
-					Type:   i.Type,
-					Status: status,
-				})
+			} else {
+				// Cache miss - fetch from API
+				Logger.Debug().Str("key", cacheKey).Err(err).Msg("Cache miss, fetching from API")
+
+				m, err := client.Members.List(groupEmail).Do()
+				if err != nil {
+					exitWithError(err.Error())
+				}
+
+				// Build list of members with status
+				for _, i := range m.Members {
+					status := "active"
+					if i.Type == "GROUP" {
+						status = "group"
+					} else if i.Type == "USER" {
+						u, err := client.Users.Get(i.Email).Do()
+						if err != nil {
+							Logger.Error().Err(err).Str("user", i.Email).Msg("Failed to get user details")
+							continue
+						}
+						if _, ok := formerEmployeesOU[u.OrgUnitPath]; ok {
+							status = "former"
+						}
+					}
+					members = append(members, groupMember{
+						Email:  i.Email,
+						Type:   i.Type,
+						Status: status,
+					})
+				}
+
+				// Write to cache
+				if err := writeToCache(cacheKey, members, cacheTTL); err != nil {
+					Logger.Warn().Err(err).Msg("Failed to write to cache")
+				}
 			}
 
 			headers := []string{"Email", "Type", "Status"}
@@ -203,9 +234,45 @@ func listGroupRunFunc(cmd *cobra.Command, args []string) {
 			}
 		}
 	} else {
-		r, err := client.Groups.List().Customer("my_customer").Do()
-		if err != nil {
-			exitWithError(err.Error())
+		// Generate cache key based on domain and filters
+		domain := getDomain()
+		filters := make(map[string]string)
+		if inactiveOnly {
+			filters["inactive-only"] = "true"
+		}
+		cacheKey := getCacheKey("groups", domain, filters)
+		cacheTTL := getCacheTTL()
+
+		var r *admin.Groups
+
+		// Try to read from cache first
+		cachedData, err := readFromCache(cacheKey, cacheTTL)
+		if err == nil {
+			// Cache hit - unmarshal the data
+			if groupsData, ok := cachedData.([]interface{}); ok {
+				r = &admin.Groups{}
+				for _, groupInterface := range groupsData {
+					groupBytes, _ := json.Marshal(groupInterface)
+					var group admin.Group
+					if err := json.Unmarshal(groupBytes, &group); err == nil {
+						r.Groups = append(r.Groups, &group)
+					}
+				}
+				Logger.Debug().Str("key", cacheKey).Int("count", len(r.Groups)).Msg("Using cached group list")
+			}
+		} else {
+			// Cache miss - fetch from API
+			Logger.Debug().Str("key", cacheKey).Err(err).Msg("Cache miss, fetching from API")
+
+			r, err = client.Groups.List().Customer("my_customer").Do()
+			if err != nil {
+				exitWithError(err.Error())
+			}
+
+			// Write to cache
+			if err := writeToCache(cacheKey, r.Groups, cacheTTL); err != nil {
+				Logger.Warn().Err(err).Msg("Failed to write to cache")
+			}
 		}
 
 		// Collect group info concurrently

@@ -109,6 +109,7 @@ func TestRootCommandHasDomainFlag(t *testing.T) {
 	flag := rootCmd.PersistentFlags().Lookup("domain")
 	if flag == nil {
 		t.Fatal("--domain flag should exist")
+		return
 	}
 
 	if flag.Usage != "domain for email addresses (e.g., example.com)" {

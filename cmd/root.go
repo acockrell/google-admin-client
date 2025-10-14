@@ -18,6 +18,7 @@ var (
 	yesFlag    bool   // Global --yes flag to skip all confirmations
 	formatFlag string // Global --format flag for output formatting
 	quietFlag  bool   // Global --quiet flag for minimal output
+	// Cache flags are defined in cache.go to avoid circular dependencies
 )
 
 var rootCmd = &cobra.Command{
@@ -63,6 +64,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&formatFlag, "format", "", "output format: json, csv, yaml, table, plain (default: plain)")
 	rootCmd.PersistentFlags().BoolVarP(&quietFlag, "quiet", "q", false, "quiet mode - minimal output suitable for scripting")
 
+	// Cache flags
+	rootCmd.PersistentFlags().BoolVar(&noCacheFlag, "no-cache", false, "disable cache and force API calls")
+	rootCmd.PersistentFlags().StringVar(&cacheTTLFlag, "cache-ttl", "", "cache TTL (e.g., '15m', '1h', '30s')")
+
 	// Maintain backward compatibility with old flag names
 	rootCmd.PersistentFlags().StringVar(&clientSecret, "secret", clientSecret, "deprecated: use --client-secret instead")
 	rootCmd.PersistentFlags().StringVar(&cacheFile, "cache", cacheFile, "deprecated: use --cache-file instead")
@@ -95,6 +100,11 @@ func init() {
 	if err := viper.BindEnv("domain", "GAC_DOMAIN", "GOOGLE_ADMIN_DOMAIN"); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to bind domain env vars: %s\n", err)
 	}
+
+	// Set default cache configuration
+	viper.SetDefault("cache.enabled", true)
+	viper.SetDefault("cache.ttl", "15m")
+	viper.SetDefault("cache.directory", "~/.cache/gac")
 }
 
 // initConfig reads in config file and ENV variables if set.
