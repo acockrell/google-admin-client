@@ -102,6 +102,7 @@ func TestCompletionValidArgs(t *testing.T) {
 
 	if completionCmd == nil {
 		t.Fatal("completion command not found")
+		return
 	}
 
 	expectedValidArgs := []string{"bash", "zsh", "fish"}

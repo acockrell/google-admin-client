@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
 	admin "google.golang.org/api/admin/directory/v1"
@@ -104,19 +105,56 @@ func listUserRunFunc(cmd *cobra.Command, args []string) {
 			exitWithError(fmt.Sprintf("Failed to format output: %s", err))
 		}
 	} else {
-		var u admin.Users
-		var pageToken string
-		for {
-			res, err := client.Users.List().Customer("my_customer").PageToken(pageToken).Do()
-			if err != nil {
-				exitWithError(err.Error())
-			}
-			u.Users = append(u.Users, res.Users...)
+		// Generate cache key based on domain and filters
+		domain := getDomain()
+		filters := make(map[string]string)
+		if disabledOnly {
+			filters["disabled-only"] = "true"
+		}
+		cacheKey := getCacheKey("users", domain, filters)
+		cacheTTL := getCacheTTL()
 
-			if res.NextPageToken == "" {
-				break
+		var u admin.Users
+
+		// Try to read from cache first
+		cachedData, err := readFromCache(cacheKey, cacheTTL)
+		if err == nil {
+			// Cache hit - unmarshal the data
+			// The cached data is a slice of users
+			if users, ok := cachedData.([]interface{}); ok {
+				// Convert back to admin.User objects
+				for _, userInterface := range users {
+					// Marshal and unmarshal to convert map to struct
+					userBytes, _ := json.Marshal(userInterface)
+					var user admin.User
+					if err := json.Unmarshal(userBytes, &user); err == nil {
+						u.Users = append(u.Users, &user)
+					}
+				}
+				Logger.Debug().Str("key", cacheKey).Int("count", len(u.Users)).Msg("Using cached user list")
 			}
-			pageToken = res.NextPageToken
+		} else {
+			// Cache miss - fetch from API
+			Logger.Debug().Str("key", cacheKey).Err(err).Msg("Cache miss, fetching from API")
+
+			var pageToken string
+			for {
+				res, err := client.Users.List().Customer("my_customer").PageToken(pageToken).Do()
+				if err != nil {
+					exitWithError(err.Error())
+				}
+				u.Users = append(u.Users, res.Users...)
+
+				if res.NextPageToken == "" {
+					break
+				}
+				pageToken = res.NextPageToken
+			}
+
+			// Write to cache (before filtering)
+			if err := writeToCache(cacheKey, u.Users, cacheTTL); err != nil {
+				Logger.Warn().Err(err).Msg("Failed to write to cache")
+			}
 		}
 
 		if disabledOnly {
